@@ -1,0 +1,122 @@
+{
+  "enabled": true,
+  "masterVolume": 0.8,
+  "speechEnabled": true,
+  "events": {
+    "decision": {
+      "enabled": true,
+      "sound": "Bottle.aiff",
+      "volume": 0.7,
+      "doubleChime": true,
+      "speech": "Your input needed",
+      "voice": "Samantha"
+    },
+    "question": {
+      "enabled": true,
+      "sound": "Bottle.aiff",
+      "volume": 0.7,
+      "speech": null,
+      "voice": null
+    },
+    "victory": {
+      "enabled": true,
+      "sound": "Hero.aiff",
+      "volume": 0.7,
+      "preSound": "Glass.aiff",
+      "speech": "Victory",
+      "voice": "Bells"
+    },
+    "taskComplete": {
+      "enabled": true,
+      "sound": "Glass.aiff",
+      "volume": 0.6,
+      "speech": "Task complete",
+      "voice": "Bells"
+    },
+    "searching": {
+      "enabled": true,
+      "sound": "Submarine.aiff",
+      "volume": 0.5,
+      "speech": null,
+      "voice": null
+    },
+    "fileCreated": {
+      "enabled": true,
+      "sound": "Pop.aiff",
+      "volume": 0.6,
+      "speech": null,
+      "voice": null
+    },
+    "error": {
+      "enabled": true,
+      "sound": "Basso.aiff",
+      "volume": 0.7,
+      "speech": "Uh oh",
+      "voice": "Bad News"
+    },
+    "warning": {
+      "enabled": true,
+      "sound": "Funk.aiff",
+      "volume": 0.5,
+      "speech": null,
+      "voice": null
+    },
+    "funny": {
+      "enabled": true,
+      "sound": "Frog.aiff",
+      "volume": 0.5,
+      "speech": null,
+      "voice": null
+    },
+    "thinking": {
+      "enabled": true,
+      "sound": "Morse.aiff",
+      "volume": 0.4,
+      "speech": null,
+      "voice": null
+    },
+    "macRelated": {
+      "enabled": true,
+      "sound": "Sosumi.aiff",
+      "volume": 0.4,
+      "speech": null,
+      "voice": null
+    },
+    "default": {
+      "enabled": true,
+      "sound": "Purr.aiff",
+      "volume": 0.25,
+      "speech": null,
+      "voice": null
+    }
+  },
+  "availableSounds": [
+    "Basso.aiff",
+    "Blow.aiff",
+    "Bottle.aiff",
+    "Frog.aiff",
+    "Funk.aiff",
+    "Glass.aiff",
+    "Hero.aiff",
+    "Morse.aiff",
+    "Ping.aiff",
+    "Pop.aiff",
+    "Purr.aiff",
+    "Sosumi.aiff",
+    "Submarine.aiff",
+    "Tink.aiff"
+  ],
+  "availableVoices": [
+    "Samantha",
+    "Bells",
+    "Bad News",
+    "Bubbles",
+    "Albert",
+    "Boing",
+    "Cellos",
+    "Daniel",
+    "Fiona",
+    "Fred",
+    "Wobble"
+  ]
+}
