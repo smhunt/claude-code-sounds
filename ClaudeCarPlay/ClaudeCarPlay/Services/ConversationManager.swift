@@ -3,47 +3,70 @@ import UIKit
 
 class ConversationManager: NSObject {
 
+    // MARK: - Services
+
     private let speechRecognition = SpeechRecognitionService()
     private let tts = TextToSpeechService()
     private let claudeAPI = ClaudeAPIService()
     private let store = ConversationStore.shared
+
+    // MARK: - State
 
     private var conversationHistory: [[String: Any]] = []
     private var currentUserInput = ""
     private var currentResponse = ""
     private var isProcessing = false
 
-    // UI bindings
+    var currentMode: AppMode = .drive {
+        didSet {
+            // Reset conversation for new mode
+            conversationHistory = []
+        }
+    }
+
+    // MARK: - Callbacks
+
+    var onStatusChange: ((String) -> Void)?
+    var onMessageReceived: ((String, String) -> Void)?  // (role, content)
+    var onStreamChunk: ((String) -> Void)?
+    var onActionTriggered: ((String, String) -> Void)?  // (action, param)
+
+    // Legacy support
     private weak var terminalView: TerminalView?
     private weak var carPlayDelegate: CarPlaySceneDelegate?
 
-    // Status callback
-    var onStatusChange: ((String) -> Void)?
+    // MARK: - Init
+
+    override init() {
+        super.init()
+        commonInit()
+    }
 
     init(terminalView: TerminalView? = nil, carPlayDelegate: CarPlaySceneDelegate? = nil) {
         self.terminalView = terminalView
         self.carPlayDelegate = carPlayDelegate
         super.init()
+        commonInit()
+    }
 
+    private func commonInit() {
         speechRecognition.delegate = self
         tts.delegate = self
         claudeAPI.delegate = self
-
-        // Load persisted conversation
         loadHistory()
     }
+
+    // MARK: - Public Methods
 
     func startListening() {
         guard !isProcessing else { return }
         guard Config.shared.hasValidApiKey else {
-            appendToTerminal("\n[Error: No API key configured]\n")
             onStatusChange?("No API Key")
             return
         }
 
         if Config.shared.autoListen {
             speechRecognition.startListening()
-            appendToTerminal("\n$ ")
             onStatusChange?("Listening...")
             hapticFeedback(.light)
         }
@@ -65,37 +88,18 @@ class ConversationManager: NSObject {
     func clearConversation() {
         conversationHistory = []
         store.clearCurrentSession()
-        terminalView?.clear()
-        appendToTerminal("$ Session cleared\n")
         hapticFeedback(.medium)
     }
 
     func newSession() {
         store.newSession()
         conversationHistory = []
-        terminalView?.clear()
-        appendToTerminal("$ New session started\n")
-        startListening()
     }
+
+    // MARK: - Private Methods
 
     private func loadHistory() {
         conversationHistory = store.loadMessages()
-
-        // Replay history to terminal
-        for msg in conversationHistory {
-            let role = msg["role"] as? String ?? ""
-            let content = msg["content"] as? String ?? ""
-            if role == "user" {
-                appendToTerminal("$ \(content)\n", silent: true)
-            } else {
-                appendToTerminal("> \(content)\n", silent: true)
-            }
-        }
-
-        let count = conversationHistory.count
-        if count > 0 {
-            appendToTerminal("\n[Restored \(count) messages]\n", silent: true)
-        }
     }
 
     private func sendToClaude(_ text: String) {
@@ -111,18 +115,29 @@ class ConversationManager: NSObject {
 
         // Save user message
         store.saveMessage(role: "user", content: text)
+        onMessageReceived?("user", text)
 
-        // Show in terminal
-        appendToTerminal("\(text)\n> ")
-
-        // Send to Claude
-        claudeAPI.sendMessage(text, conversationHistory: conversationHistory)
+        // Send to Claude with mode-specific prompt
+        claudeAPI.sendMessage(text, conversationHistory: conversationHistory, systemPrompt: currentMode.systemPrompt)
     }
 
-    private func appendToTerminal(_ text: String, silent: Bool = false) {
-        DispatchQueue.main.async { [weak self] in
-            self?.terminalView?.append(text)
-            self?.carPlayDelegate?.updateTerminal(text: self?.terminalView?.fullText ?? text)
+    private func parseActions(_ text: String) {
+        // Parse [[NAV:...]] actions
+        let navPattern = "\\[\\[NAV:([^\\]]+)\\]\\]"
+        if let regex = try? NSRegularExpression(pattern: navPattern),
+           let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+           let range = Range(match.range(at: 1), in: text) {
+            let destination = String(text[range])
+            onActionTriggered?("NAV", destination)
+        }
+
+        // Parse [[MUSIC:...]] actions
+        let musicPattern = "\\[\\[MUSIC:([^\\]]+)\\]\\]"
+        if let regex = try? NSRegularExpression(pattern: musicPattern),
+           let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text)),
+           let range = Range(match.range(at: 1), in: text) {
+            let query = String(text[range])
+            onActionTriggered?("MUSIC", query)
         }
     }
 
@@ -149,11 +164,9 @@ extension ConversationManager: SpeechRecognitionDelegate {
     func didFailWithError(_ error: Error) {
         let message = error.localizedDescription
         if !message.contains("cancelled") {
-            appendToTerminal("\n[Mic: \(message)]\n")
+            onStatusChange?("Mic Error")
         }
-        onStatusChange?("Mic Error")
 
-        // Restart listening after error
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
             self?.startListening()
         }
@@ -166,9 +179,7 @@ extension ConversationManager: ClaudeAPIDelegate {
 
     func didReceiveStreamChunk(_ text: String) {
         currentResponse += text
-
-        // Live terminal output
-        appendToTerminal(text)
+        onStreamChunk?(text)
 
         // Stream to TTS if enabled
         if Config.shared.voiceEnabled {
@@ -179,20 +190,23 @@ extension ConversationManager: ClaudeAPIDelegate {
     }
 
     func didCompleteStream(fullResponse: String) {
-        // Save assistant response
         let finalResponse = currentResponse
+
+        // Parse any actions
+        parseActions(finalResponse)
+
+        // Save assistant response
         store.saveMessage(role: "assistant", content: finalResponse)
 
         // Update conversation history
         conversationHistory.append(["role": "user", "content": currentUserInput])
         conversationHistory.append(["role": "assistant", "content": finalResponse])
 
-        // Flush any remaining TTS
+        // Flush TTS
         if Config.shared.voiceEnabled {
             tts.flushPendingText()
         }
 
-        appendToTerminal("\n")
         onStatusChange?("Done")
         hapticFeedback(.light)
 
@@ -200,15 +214,15 @@ extension ConversationManager: ClaudeAPIDelegate {
         currentUserInput = ""
         currentResponse = ""
 
-        // Resume listening after TTS finishes (if voice disabled, resume now)
+        // Resume listening if voice disabled
         if !Config.shared.voiceEnabled {
             startListening()
         }
     }
 
     func didFailWithError(_ error: Error) {
-        appendToTerminal("\n[API Error: \(error.localizedDescription)]\n")
-        onStatusChange?("API Error")
+        onStatusChange?("Error")
+        onMessageReceived?("assistant", "Sorry, I had trouble with that. Try again?")
         isProcessing = false
         hapticFeedback(.heavy)
 

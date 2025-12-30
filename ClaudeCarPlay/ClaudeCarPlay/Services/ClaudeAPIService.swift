@@ -20,7 +20,7 @@ class ClaudeAPIService: NSObject {
         Config.shared.apiKey ?? ""
     }
 
-    func sendMessage(_ userMessage: String, conversationHistory: [[String: Any]]) {
+    func sendMessage(_ userMessage: String, conversationHistory: [[String: Any]], systemPrompt: String? = nil) {
         cancel()
 
         guard !apiKey.isEmpty else {
@@ -31,17 +31,17 @@ class ClaudeAPIService: NSObject {
         var messages = conversationHistory
         messages.append(["role": "user", "content": userMessage])
 
+        let prompt = systemPrompt ?? """
+            You are Claude, a helpful AI driving assistant integrated into CarPlay.
+            Keep responses concise and safe for listening while driving.
+            """
+
         let body: [String: Any] = [
             "model": "claude-sonnet-4-20250514",
             "max_tokens": 1024,
             "stream": true,
             "messages": messages,
-            "system": """
-                You are Claude, a helpful AI driving assistant integrated into CarPlay.
-                Keep responses concise and safe for listening while driving.
-                Avoid long lists, complex formatting, or anything that would distract a driver.
-                Be conversational but brief. If something needs a long explanation, offer to continue later.
-                """
+            "system": prompt
         ]
 
         guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
@@ -85,7 +85,6 @@ class ClaudeAPIService: NSObject {
 
         let type = json["type"] as? String
 
-        // Handle content_block_delta
         if type == "content_block_delta" {
             if let delta = json["delta"] as? [String: Any],
                let text = delta["text"] as? String {
@@ -96,7 +95,6 @@ class ClaudeAPIService: NSObject {
             }
         }
 
-        // Handle error
         if type == "error" {
             if let error = json["error"] as? [String: Any],
                let message = error["message"] as? String {
@@ -106,7 +104,6 @@ class ClaudeAPIService: NSObject {
             }
         }
 
-        // Handle message_stop
         if type == "message_stop" {
             DispatchQueue.main.async {
                 self.delegate?.didCompleteStream(fullResponse: self.fullResponse)
@@ -124,7 +121,6 @@ extension ClaudeAPIService: URLSessionDataDelegate {
 
         buffer += text
 
-        // Process complete lines
         while let range = buffer.range(of: "\n") {
             let line = String(buffer[..<range.lowerBound])
             buffer = String(buffer[range.upperBound...])
