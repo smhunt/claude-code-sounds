@@ -1,14 +1,13 @@
 import Foundation
 
-protocol ClaudeAPIDelegate: AnyObject {
-    func didReceiveStreamChunk(_ text: String)
-    func didCompleteStream(fullResponse: String)
-    func didFailWithError(_ error: Error)
-}
+// MARK: - Claude Provider
 
-class ClaudeAPIService: NSObject {
+class ClaudeProvider: NSObject, AIProvider {
 
-    weak var delegate: ClaudeAPIDelegate?
+    weak var delegate: AIProviderDelegate?
+
+    var name: String { "Claude" }
+    var icon: String { "brain.head.profile" }
 
     private let endpoint = "https://api.anthropic.com/v1/messages"
     private var currentTask: URLSessionDataTask?
@@ -16,15 +15,20 @@ class ClaudeAPIService: NSObject {
     private var buffer = ""
     private var fullResponse = ""
 
-    var apiKey: String {
-        Config.shared.apiKey ?? ""
+    private var apiKey: String {
+        Config.shared.claudeApiKey ?? ""
     }
 
-    func sendMessage(_ userMessage: String, conversationHistory: [[String: Any]], systemPrompt: String? = nil) {
+    func isConfigured() -> Bool {
+        guard let key = Config.shared.claudeApiKey else { return false }
+        return key.hasPrefix("sk-ant-") && key.count > 20
+    }
+
+    func sendMessage(_ userMessage: String, conversationHistory: [[String: Any]], systemPrompt: String?) {
         cancel()
 
         guard !apiKey.isEmpty else {
-            delegate?.didFailWithError(NSError(domain: "ClaudeAPI", code: 401, userInfo: [NSLocalizedDescriptionKey: "No API key configured"]))
+            delegate?.didFailWithError(NSError(domain: "Claude", code: 401, userInfo: [NSLocalizedDescriptionKey: "No API key configured"]))
             return
         }
 
@@ -45,7 +49,7 @@ class ClaudeAPIService: NSObject {
         ]
 
         guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
-            delegate?.didFailWithError(NSError(domain: "ClaudeAPI", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to serialize request"]))
+            delegate?.didFailWithError(NSError(domain: "Claude", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to serialize request"]))
             return
         }
 
@@ -73,7 +77,7 @@ class ClaudeAPIService: NSObject {
         streamSession = nil
     }
 
-    fileprivate func processStreamLine(_ line: String) {
+    private func processStreamLine(_ line: String) {
         guard line.hasPrefix("data: ") else { return }
         let jsonString = String(line.dropFirst(6))
 
@@ -99,7 +103,7 @@ class ClaudeAPIService: NSObject {
             if let error = json["error"] as? [String: Any],
                let message = error["message"] as? String {
                 DispatchQueue.main.async {
-                    self.delegate?.didFailWithError(NSError(domain: "ClaudeAPI", code: 400, userInfo: [NSLocalizedDescriptionKey: message]))
+                    self.delegate?.didFailWithError(NSError(domain: "Claude", code: 400, userInfo: [NSLocalizedDescriptionKey: message]))
                 }
             }
         }
@@ -114,7 +118,7 @@ class ClaudeAPIService: NSObject {
 
 // MARK: - URLSession Delegate
 
-extension ClaudeAPIService: URLSessionDataDelegate {
+extension ClaudeProvider: URLSessionDataDelegate {
 
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         guard let text = String(data: data, encoding: .utf8) else { return }
@@ -146,7 +150,7 @@ extension ClaudeAPIService: URLSessionDataDelegate {
         if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
             DispatchQueue.main.async {
                 self.delegate?.didFailWithError(NSError(
-                    domain: "ClaudeAPI",
+                    domain: "Claude",
                     code: httpResponse.statusCode,
                     userInfo: [NSLocalizedDescriptionKey: "HTTP \(httpResponse.statusCode)"]
                 ))

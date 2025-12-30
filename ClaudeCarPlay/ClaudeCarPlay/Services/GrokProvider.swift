@@ -1,59 +1,72 @@
 import Foundation
 
-protocol ClaudeAPIDelegate: AnyObject {
-    func didReceiveStreamChunk(_ text: String)
-    func didCompleteStream(fullResponse: String)
-    func didFailWithError(_ error: Error)
-}
+// MARK: - Grok Provider (xAI API)
 
-class ClaudeAPIService: NSObject {
+class GrokProvider: NSObject, AIProvider {
 
-    weak var delegate: ClaudeAPIDelegate?
+    weak var delegate: AIProviderDelegate?
 
-    private let endpoint = "https://api.anthropic.com/v1/messages"
+    var name: String { "Grok" }
+    var icon: String { "sparkle" }
+
+    private let endpoint = "https://api.x.ai/v1/chat/completions"
     private var currentTask: URLSessionDataTask?
     private var streamSession: URLSession?
     private var buffer = ""
     private var fullResponse = ""
 
-    var apiKey: String {
-        Config.shared.apiKey ?? ""
+    private var apiKey: String {
+        Config.shared.grokApiKey ?? ""
     }
 
-    func sendMessage(_ userMessage: String, conversationHistory: [[String: Any]], systemPrompt: String? = nil) {
+    func isConfigured() -> Bool {
+        guard let key = Config.shared.grokApiKey else { return false }
+        return key.hasPrefix("xai-") && key.count > 10
+    }
+
+    func sendMessage(_ userMessage: String, conversationHistory: [[String: Any]], systemPrompt: String?) {
         cancel()
 
         guard !apiKey.isEmpty else {
-            delegate?.didFailWithError(NSError(domain: "ClaudeAPI", code: 401, userInfo: [NSLocalizedDescriptionKey: "No API key configured"]))
+            delegate?.didFailWithError(NSError(domain: "Grok", code: 401, userInfo: [NSLocalizedDescriptionKey: "No Grok API key configured"]))
             return
         }
 
-        var messages = conversationHistory
+        // Convert to OpenAI-style messages
+        var messages: [[String: Any]] = []
+
+        // Add system message
+        let prompt = systemPrompt ?? """
+            You are Grok, a witty and helpful AI driving assistant integrated into CarPlay.
+            Keep responses concise and safe for listening while driving.
+            Be direct, slightly irreverent, and genuinely helpful.
+            """
+        messages.append(["role": "system", "content": prompt])
+
+        // Add conversation history
+        for message in conversationHistory {
+            messages.append(message)
+        }
+
+        // Add current user message
         messages.append(["role": "user", "content": userMessage])
 
-        let prompt = systemPrompt ?? """
-            You are Claude, a helpful AI driving assistant integrated into CarPlay.
-            Keep responses concise and safe for listening while driving.
-            """
-
         let body: [String: Any] = [
-            "model": "claude-sonnet-4-20250514",
-            "max_tokens": 1024,
-            "stream": true,
+            "model": "grok-3",
             "messages": messages,
-            "system": prompt
+            "stream": true,
+            "temperature": 0.7
         ]
 
         guard let jsonData = try? JSONSerialization.data(withJSONObject: body) else {
-            delegate?.didFailWithError(NSError(domain: "ClaudeAPI", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to serialize request"]))
+            delegate?.didFailWithError(NSError(domain: "Grok", code: 1, userInfo: [NSLocalizedDescriptionKey: "Failed to serialize request"]))
             return
         }
 
         var request = URLRequest(url: URL(string: endpoint)!)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue(apiKey, forHTTPHeaderField: "x-api-key")
-        request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
+        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.httpBody = jsonData
 
         buffer = ""
@@ -73,9 +86,9 @@ class ClaudeAPIService: NSObject {
         streamSession = nil
     }
 
-    fileprivate func processStreamLine(_ line: String) {
+    private func processStreamLine(_ line: String) {
         guard line.hasPrefix("data: ") else { return }
-        let jsonString = String(line.dropFirst(6))
+        let jsonString = String(line.dropFirst(6)).trimmingCharacters(in: .whitespaces)
 
         guard jsonString != "[DONE]",
               let data = jsonString.data(using: .utf8),
@@ -83,30 +96,32 @@ class ClaudeAPIService: NSObject {
             return
         }
 
-        let type = json["type"] as? String
-
-        if type == "content_block_delta" {
-            if let delta = json["delta"] as? [String: Any],
-               let text = delta["text"] as? String {
-                fullResponse += text
-                DispatchQueue.main.async {
-                    self.delegate?.didReceiveStreamChunk(text)
-                }
+        // OpenAI/xAI format: choices[0].delta.content
+        if let choices = json["choices"] as? [[String: Any]],
+           let first = choices.first,
+           let delta = first["delta"] as? [String: Any],
+           let content = delta["content"] as? String {
+            fullResponse += content
+            DispatchQueue.main.async {
+                self.delegate?.didReceiveStreamChunk(content)
             }
         }
 
-        if type == "error" {
-            if let error = json["error"] as? [String: Any],
-               let message = error["message"] as? String {
-                DispatchQueue.main.async {
-                    self.delegate?.didFailWithError(NSError(domain: "ClaudeAPI", code: 400, userInfo: [NSLocalizedDescriptionKey: message]))
-                }
-            }
-        }
-
-        if type == "message_stop" {
+        // Check for finish reason
+        if let choices = json["choices"] as? [[String: Any]],
+           let first = choices.first,
+           let finishReason = first["finish_reason"] as? String,
+           finishReason == "stop" {
             DispatchQueue.main.async {
                 self.delegate?.didCompleteStream(fullResponse: self.fullResponse)
+            }
+        }
+
+        // Handle errors
+        if let error = json["error"] as? [String: Any],
+           let message = error["message"] as? String {
+            DispatchQueue.main.async {
+                self.delegate?.didFailWithError(NSError(domain: "Grok", code: 400, userInfo: [NSLocalizedDescriptionKey: message]))
             }
         }
     }
@@ -114,7 +129,7 @@ class ClaudeAPIService: NSObject {
 
 // MARK: - URLSession Delegate
 
-extension ClaudeAPIService: URLSessionDataDelegate {
+extension GrokProvider: URLSessionDataDelegate {
 
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
         guard let text = String(data: data, encoding: .utf8) else { return }
@@ -139,6 +154,11 @@ extension ClaudeAPIService: URLSessionDataDelegate {
                     self.delegate?.didFailWithError(error)
                 }
             }
+        } else if !fullResponse.isEmpty {
+            // Ensure completion fires if we got data but no explicit stop
+            DispatchQueue.main.async {
+                self.delegate?.didCompleteStream(fullResponse: self.fullResponse)
+            }
         }
     }
 
@@ -146,7 +166,7 @@ extension ClaudeAPIService: URLSessionDataDelegate {
         if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
             DispatchQueue.main.async {
                 self.delegate?.didFailWithError(NSError(
-                    domain: "ClaudeAPI",
+                    domain: "Grok",
                     code: httpResponse.statusCode,
                     userInfo: [NSLocalizedDescriptionKey: "HTTP \(httpResponse.statusCode)"]
                 ))

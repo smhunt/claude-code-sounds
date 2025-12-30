@@ -13,6 +13,10 @@
 		A10000000000000000000004 /* SpeechRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004; };
 		A10000000000000000000005 /* TextToSpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005; };
 		A10000000000000000000006 /* ClaudeAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006; };
+		A10000000000000000000040 /* AIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000040; };
+		A10000000000000000000041 /* ClaudeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000041; };
+		A10000000000000000000042 /* GrokProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000042; };
+		A10000000000000000000043 /* OpenAIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000043; };
 		A10000000000000000000008 /* ConversationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008; };
 		A10000000000000000000009 /* TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009; };
 		A10000000000000000000010 /* CarPlay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010; };
@@ -24,6 +28,12 @@
 		A10000000000000000000023 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000023; };
 		A10000000000000000000024 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000024; };
 		A10000000000000000000025 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000025; };
+		A10000000000000000000030 /* AppMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000030; };
+		A10000000000000000000031 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000031; };
+		A10000000000000000000032 /* WaveformView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000032; };
+		A10000000000000000000033 /* ModePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000033; };
+		A10000000000000000000034 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000034; };
+		A10000000000000000000035 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000035; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -33,6 +43,10 @@
 		A20000000000000000000004 /* SpeechRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionService.swift; sourceTree = "<group>"; };
 		A20000000000000000000005 /* TextToSpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextToSpeechService.swift; sourceTree = "<group>"; };
 		A20000000000000000000006 /* ClaudeAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeAPIService.swift; sourceTree = "<group>"; };
+		A20000000000000000000040 /* AIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIProvider.swift; sourceTree = "<group>"; };
+		A20000000000000000000041 /* ClaudeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeProvider.swift; sourceTree = "<group>"; };
+		A20000000000000000000042 /* GrokProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrokProvider.swift; sourceTree = "<group>"; };
+		A20000000000000000000043 /* OpenAIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIProvider.swift; sourceTree = "<group>"; };
 		A20000000000000000000008 /* ConversationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationManager.swift; sourceTree = "<group>"; };
 		A20000000000000000000009 /* TerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalView.swift; sourceTree = "<group>"; };
 		A20000000000000000000010 /* CarPlay.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CarPlay.framework; path = System/Library/Frameworks/CarPlay.framework; sourceTree = SDKROOT; };
@@ -46,6 +60,12 @@
 		A20000000000000000000023 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		A20000000000000000000024 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A20000000000000000000025 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		A20000000000000000000030 /* AppMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppMode.swift; sourceTree = "<group>"; };
+		A20000000000000000000031 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
+		A20000000000000000000032 /* WaveformView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaveformView.swift; sourceTree = "<group>"; };
+		A20000000000000000000033 /* ModePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModePickerView.swift; sourceTree = "<group>"; };
+		A20000000000000000000034 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
+		A20000000000000000000035 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A30000000000000000000001 /* ClaudeCarPlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClaudeCarPlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -83,6 +103,7 @@
 				A50000000000000000000005 /* Views */,
 				A50000000000000000000008 /* Models */,
 				A50000000000000000000009 /* Base.lproj */,
+				A20000000000000000000035 /* Assets.xcassets */,
 				A20000000000000000000013 /* Info.plist */,
 				A20000000000000000000014 /* ClaudeCarPlay.entitlements */,
 			);
@@ -100,6 +121,10 @@
 		A50000000000000000000004 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A20000000000000000000040 /* AIProvider.swift */,
+				A20000000000000000000041 /* ClaudeProvider.swift */,
+				A20000000000000000000042 /* GrokProvider.swift */,
+				A20000000000000000000043 /* OpenAIProvider.swift */,
 				A20000000000000000000004 /* SpeechRecognitionService.swift */,
 				A20000000000000000000005 /* TextToSpeechService.swift */,
 				A20000000000000000000006 /* ClaudeAPIService.swift */,
@@ -111,9 +136,13 @@
 		A50000000000000000000005 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				A20000000000000000000031 /* MainViewController.swift */,
 				A20000000000000000000009 /* TerminalView.swift */,
 				A20000000000000000000022 /* OnboardingViewController.swift */,
 				A20000000000000000000023 /* SettingsViewController.swift */,
+				A20000000000000000000032 /* WaveformView.swift */,
+				A20000000000000000000033 /* ModePickerView.swift */,
+				A20000000000000000000034 /* HistoryViewController.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -140,6 +169,7 @@
 		A50000000000000000000008 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				A20000000000000000000030 /* AppMode.swift */,
 				A20000000000000000000020 /* ConversationStore.swift */,
 				A20000000000000000000021 /* Config.swift */,
 			);
@@ -159,7 +189,7 @@
 /* Begin PBXNativeTarget section */
 		A60000000000000000000001 /* ClaudeCarPlay */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A80000000000000000000001 /* Build configuration list for PBXNativeTarget "ClaudeCarPlay" */;
+			buildConfigurationList = A80000000000000000000001;
 			buildPhases = (
 				A70000000000000000000001 /* Sources */,
 				A40000000000000000000001 /* Frameworks */,
@@ -171,7 +201,7 @@
 			);
 			name = ClaudeCarPlay;
 			productName = ClaudeCarPlay;
-			productReference = A30000000000000000000001 /* ClaudeCarPlay.app */;
+			productReference = A30000000000000000000001;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -183,13 +213,8 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1500;
 				LastUpgradeCheck = 1500;
-				TargetAttributes = {
-					A60000000000000000000001 = {
-						CreatedOnToolsVersion = 15.0;
-					};
-				};
 			};
-			buildConfigurationList = A80000000000000000000002 /* Build configuration list for PBXProject "ClaudeCarPlay" */;
+			buildConfigurationList = A80000000000000000000002;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -198,7 +223,7 @@
 				Base,
 			);
 			mainGroup = A50000000000000000000001;
-			productRefGroup = A50000000000000000000007 /* Products */;
+			productRefGroup = A50000000000000000000007;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -213,6 +238,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000024 /* LaunchScreen.storyboard in Resources */,
+				A10000000000000000000035 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,6 +252,10 @@
 				A10000000000000000000001 /* AppDelegate.swift in Sources */,
 				A10000000000000000000002 /* SceneDelegate.swift in Sources */,
 				A10000000000000000000003 /* CarPlaySceneDelegate.swift in Sources */,
+				A10000000000000000000040 /* AIProvider.swift in Sources */,
+				A10000000000000000000041 /* ClaudeProvider.swift in Sources */,
+				A10000000000000000000042 /* GrokProvider.swift in Sources */,
+				A10000000000000000000043 /* OpenAIProvider.swift in Sources */,
 				A10000000000000000000004 /* SpeechRecognitionService.swift in Sources */,
 				A10000000000000000000005 /* TextToSpeechService.swift in Sources */,
 				A10000000000000000000006 /* ClaudeAPIService.swift in Sources */,
@@ -235,6 +265,11 @@
 				A10000000000000000000021 /* Config.swift in Sources */,
 				A10000000000000000000022 /* OnboardingViewController.swift in Sources */,
 				A10000000000000000000023 /* SettingsViewController.swift in Sources */,
+				A10000000000000000000030 /* AppMode.swift in Sources */,
+				A10000000000000000000031 /* MainViewController.swift in Sources */,
+				A10000000000000000000032 /* WaveformView.swift in Sources */,
+				A10000000000000000000033 /* ModePickerView.swift in Sources */,
+				A10000000000000000000034 /* HistoryViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -245,22 +280,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_STYLE = Automatic;
-				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
-				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -272,17 +297,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_STYLE = Automatic;
-				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_OPTIMIZATION_LEVEL = s;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -299,9 +319,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ClaudeCarPlay/Info.plist;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -309,7 +326,6 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.claudecarplay.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -324,9 +340,6 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ClaudeCarPlay/Info.plist;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -334,7 +347,6 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.claudecarplay.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};

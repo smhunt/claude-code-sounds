@@ -8,9 +8,22 @@ class Config {
 
     private let keychainService = "com.claude.carplay"
 
-    // MARK: - API Key (stored in Keychain)
+    // MARK: - Provider Selection
 
-    var apiKey: String? {
+    var selectedProvider: AIProviderType {
+        get {
+            let rawValue = UserDefaults.standard.string(forKey: "selected_provider") ?? "claude"
+            return AIProviderType(rawValue: rawValue) ?? .claude
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "selected_provider")
+        }
+    }
+
+    // MARK: - API Keys (stored in Keychain)
+
+    // Claude API Key
+    var claudeApiKey: String? {
         get { getKeychainValue(key: "anthropic_api_key") }
         set {
             if let value = newValue {
@@ -21,9 +34,55 @@ class Config {
         }
     }
 
+    // Grok API Key
+    var grokApiKey: String? {
+        get { getKeychainValue(key: "grok_api_key") }
+        set {
+            if let value = newValue {
+                setKeychainValue(key: "grok_api_key", value: value)
+            } else {
+                deleteKeychainValue(key: "grok_api_key")
+            }
+        }
+    }
+
+    // OpenAI API Key
+    var openaiApiKey: String? {
+        get { getKeychainValue(key: "openai_api_key") }
+        set {
+            if let value = newValue {
+                setKeychainValue(key: "openai_api_key", value: value)
+            } else {
+                deleteKeychainValue(key: "openai_api_key")
+            }
+        }
+    }
+
+    // Legacy compatibility
+    var apiKey: String? {
+        get { claudeApiKey }
+        set { claudeApiKey = newValue }
+    }
+
     var hasValidApiKey: Bool {
-        guard let key = apiKey else { return false }
-        return key.hasPrefix("sk-ant-") && key.count > 20
+        let provider = AIProviderFactory.createCurrentProvider()
+        return provider.isConfigured()
+    }
+
+    func apiKey(for provider: AIProviderType) -> String? {
+        switch provider {
+        case .claude: return claudeApiKey
+        case .grok: return grokApiKey
+        case .openai: return openaiApiKey
+        }
+    }
+
+    func setApiKey(_ key: String?, for provider: AIProviderType) {
+        switch provider {
+        case .claude: claudeApiKey = key
+        case .grok: grokApiKey = key
+        case .openai: openaiApiKey = key
+        }
     }
 
     // MARK: - User Preferences
@@ -59,6 +118,27 @@ class Config {
             return UserDefaults.standard.bool(forKey: "haptic_feedback")
         }
         set { UserDefaults.standard.set(newValue, forKey: "haptic_feedback") }
+    }
+
+    var selectedVoiceIndex: Int {
+        get { UserDefaults.standard.integer(forKey: "selected_voice_index") }
+        set { UserDefaults.standard.set(newValue, forKey: "selected_voice_index") }
+    }
+
+    // Available voices for TTS
+    static let availableVoices: [(name: String, identifier: String)] = [
+        ("Samantha", "com.apple.voice.compact.en-US.Samantha"),
+        ("Daniel", "com.apple.voice.compact.en-GB.Daniel"),
+        ("Karen", "com.apple.voice.compact.en-AU.Karen"),
+        ("Moira", "com.apple.voice.compact.en-IE.Moira")
+    ]
+
+    var selectedVoiceIdentifier: String {
+        let index = selectedVoiceIndex
+        if index >= 0 && index < Config.availableVoices.count {
+            return Config.availableVoices[index].identifier
+        }
+        return Config.availableVoices[0].identifier
     }
 
     // MARK: - Onboarding
