@@ -13,12 +13,17 @@
 		A10000000000000000000004 /* SpeechRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004; };
 		A10000000000000000000005 /* TextToSpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005; };
 		A10000000000000000000006 /* ClaudeAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006; };
-		A10000000000000000000007 /* PostgresService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000007; };
 		A10000000000000000000008 /* ConversationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008; };
 		A10000000000000000000009 /* TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009; };
 		A10000000000000000000010 /* CarPlay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010; };
 		A10000000000000000000011 /* Speech.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000011; };
 		A10000000000000000000012 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012; };
+		A10000000000000000000020 /* ConversationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020; };
+		A10000000000000000000021 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000021; };
+		A10000000000000000000022 /* OnboardingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000022; };
+		A10000000000000000000023 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000023; };
+		A10000000000000000000024 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000024; };
+		A10000000000000000000025 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000025; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,7 +33,6 @@
 		A20000000000000000000004 /* SpeechRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionService.swift; sourceTree = "<group>"; };
 		A20000000000000000000005 /* TextToSpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextToSpeechService.swift; sourceTree = "<group>"; };
 		A20000000000000000000006 /* ClaudeAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeAPIService.swift; sourceTree = "<group>"; };
-		A20000000000000000000007 /* PostgresService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostgresService.swift; sourceTree = "<group>"; };
 		A20000000000000000000008 /* ConversationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationManager.swift; sourceTree = "<group>"; };
 		A20000000000000000000009 /* TerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalView.swift; sourceTree = "<group>"; };
 		A20000000000000000000010 /* CarPlay.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CarPlay.framework; path = System/Library/Frameworks/CarPlay.framework; sourceTree = SDKROOT; };
@@ -36,6 +40,12 @@
 		A20000000000000000000012 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		A20000000000000000000013 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000000000000000000014 /* ClaudeCarPlay.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ClaudeCarPlay.entitlements; sourceTree = "<group>"; };
+		A20000000000000000000020 /* ConversationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationStore.swift; sourceTree = "<group>"; };
+		A20000000000000000000021 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		A20000000000000000000022 /* OnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewController.swift; sourceTree = "<group>"; };
+		A20000000000000000000023 /* SettingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
+		A20000000000000000000024 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A20000000000000000000025 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		A30000000000000000000001 /* ClaudeCarPlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClaudeCarPlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -47,6 +57,7 @@
 				A10000000000000000000010 /* CarPlay.framework in Frameworks */,
 				A10000000000000000000011 /* Speech.framework in Frameworks */,
 				A10000000000000000000012 /* AVFoundation.framework in Frameworks */,
+				A10000000000000000000025 /* CoreData.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,6 +81,8 @@
 				A50000000000000000000003 /* CarPlay */,
 				A50000000000000000000004 /* Services */,
 				A50000000000000000000005 /* Views */,
+				A50000000000000000000008 /* Models */,
+				A50000000000000000000009 /* Base.lproj */,
 				A20000000000000000000013 /* Info.plist */,
 				A20000000000000000000014 /* ClaudeCarPlay.entitlements */,
 			);
@@ -90,7 +103,6 @@
 				A20000000000000000000004 /* SpeechRecognitionService.swift */,
 				A20000000000000000000005 /* TextToSpeechService.swift */,
 				A20000000000000000000006 /* ClaudeAPIService.swift */,
-				A20000000000000000000007 /* PostgresService.swift */,
 				A20000000000000000000008 /* ConversationManager.swift */,
 			);
 			path = Services;
@@ -100,6 +112,8 @@
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000009 /* TerminalView.swift */,
+				A20000000000000000000022 /* OnboardingViewController.swift */,
+				A20000000000000000000023 /* SettingsViewController.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -110,6 +124,7 @@
 				A20000000000000000000010 /* CarPlay.framework */,
 				A20000000000000000000011 /* Speech.framework */,
 				A20000000000000000000012 /* AVFoundation.framework */,
+				A20000000000000000000025 /* CoreData.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -122,6 +137,23 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		A50000000000000000000008 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000020 /* ConversationStore.swift */,
+				A20000000000000000000021 /* Config.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A50000000000000000000009 /* Base.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000024 /* LaunchScreen.storyboard */,
+			);
+			path = Base.lproj;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -131,6 +163,7 @@
 			buildPhases = (
 				A70000000000000000000001 /* Sources */,
 				A40000000000000000000001 /* Frameworks */,
+				A70000000000000000000002 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -174,6 +207,17 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		A70000000000000000000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000024 /* LaunchScreen.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		A70000000000000000000001 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -185,9 +229,12 @@
 				A10000000000000000000004 /* SpeechRecognitionService.swift in Sources */,
 				A10000000000000000000005 /* TextToSpeechService.swift in Sources */,
 				A10000000000000000000006 /* ClaudeAPIService.swift in Sources */,
-				A10000000000000000000007 /* PostgresService.swift in Sources */,
 				A10000000000000000000008 /* ConversationManager.swift in Sources */,
 				A10000000000000000000009 /* TerminalView.swift in Sources */,
+				A10000000000000000000020 /* ConversationStore.swift in Sources */,
+				A10000000000000000000021 /* Config.swift in Sources */,
+				A10000000000000000000022 /* OnboardingViewController.swift in Sources */,
+				A10000000000000000000023 /* SettingsViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -260,11 +307,11 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.claude.carplay;
+				PRODUCT_BUNDLE_IDENTIFIER = com.claudecarplay.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -285,11 +332,11 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.claude.carplay;
+				PRODUCT_BUNDLE_IDENTIFIER = com.claudecarplay.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

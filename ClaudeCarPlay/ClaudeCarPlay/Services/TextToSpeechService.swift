@@ -19,34 +19,46 @@ class TextToSpeechService: NSObject {
     }
 
     func speak(_ text: String) {
-        guard !text.isEmpty else { return }
+        guard Config.shared.voiceEnabled else { return }
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
 
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-        utterance.rate = 0.52
+        utterance.rate = Config.shared.speechRate
         utterance.pitchMultiplier = 1.0
         utterance.volume = 1.0
+        utterance.preUtteranceDelay = 0
+        utterance.postUtteranceDelay = 0.1
 
         synthesizer.speak(utterance)
     }
 
     // Stream text character by character (buffers sentences)
     func streamCharacter(_ char: Character) {
+        guard Config.shared.voiceEnabled else { return }
+
         pendingText.append(char)
 
         // Speak on sentence boundaries
         if char == "." || char == "!" || char == "?" || char == "\n" {
-            flushPendingText()
+            // Check for abbreviations
+            let trimmed = pendingText.trimmingCharacters(in: .whitespaces)
+            if !trimmed.hasSuffix("Mr.") &&
+               !trimmed.hasSuffix("Mrs.") &&
+               !trimmed.hasSuffix("Dr.") &&
+               !trimmed.hasSuffix("vs.") &&
+               !trimmed.hasSuffix("etc.") {
+                flushPendingText()
+            }
         }
     }
 
     func flushPendingText() {
-        guard !pendingText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
-            pendingText = ""
-            return
-        }
-        speak(pendingText)
+        let text = pendingText.trimmingCharacters(in: .whitespacesAndNewlines)
         pendingText = ""
+
+        guard !text.isEmpty else { return }
+        speak(text)
     }
 
     func stop() {
@@ -62,11 +74,20 @@ class TextToSpeechService: NSObject {
 extension TextToSpeechService: AVSpeechSynthesizerDelegate {
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
-        isSpeaking = true
-        delegate?.didStartSpeaking()
+        if !isSpeaking {
+            isSpeaking = true
+            delegate?.didStartSpeaking()
+        }
     }
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        if !synthesizer.isSpeaking {
+            isSpeaking = false
+            delegate?.didFinishSpeaking()
+        }
+    }
+
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
         isSpeaking = false
         delegate?.didFinishSpeaking()
     }
