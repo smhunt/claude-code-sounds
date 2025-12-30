@@ -61,6 +61,27 @@ class Config {
         set { UserDefaults.standard.set(newValue, forKey: "haptic_feedback") }
     }
 
+    var selectedVoiceIndex: Int {
+        get { UserDefaults.standard.integer(forKey: "selected_voice_index") }
+        set { UserDefaults.standard.set(newValue, forKey: "selected_voice_index") }
+    }
+
+    // Available voices for TTS
+    static let availableVoices: [(name: String, identifier: String)] = [
+        ("Samantha", "com.apple.voice.compact.en-US.Samantha"),
+        ("Daniel", "com.apple.voice.compact.en-GB.Daniel"),
+        ("Karen", "com.apple.voice.compact.en-AU.Karen"),
+        ("Moira", "com.apple.voice.compact.en-IE.Moira")
+    ]
+
+    var selectedVoiceIdentifier: String {
+        let index = selectedVoiceIndex
+        if index >= 0 && index < Config.availableVoices.count {
+            return Config.availableVoices[index].identifier
+        }
+        return Config.availableVoices[0].identifier
+    }
+
     // MARK: - Onboarding
 
     var hasCompletedOnboarding: Bool {

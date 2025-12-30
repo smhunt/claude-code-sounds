@@ -23,7 +23,14 @@ class TextToSpeechService: NSObject {
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
 
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+
+        // Use selected voice or fall back to default
+        if let voice = AVSpeechSynthesisVoice(identifier: Config.shared.selectedVoiceIdentifier) {
+            utterance.voice = voice
+        } else {
+            utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        }
+
         utterance.rate = Config.shared.speechRate
         utterance.pitchMultiplier = 1.0
         utterance.volume = 1.0

@@ -142,6 +142,60 @@ class ConversationStore {
         request.predicate = NSPredicate(format: "sessionId == %@", sessionId)
         return (try? context.count(for: request)) ?? 0
     }
+
+    // MARK: - Session History
+
+    func getAllSessions() -> [(id: String, date: Date, preview: String)] {
+        let request = NSFetchRequest<MessageEntity>(entityName: "MessageEntity")
+        request.sortDescriptors = [NSSortDescriptor(key: "timestamp", ascending: false)]
+
+        do {
+            let messages = try context.fetch(request)
+
+            // Group by sessionId
+            var sessionMap: [String: (date: Date, messages: [MessageEntity])] = [:]
+            for msg in messages {
+                guard let sid = msg.sessionId else { continue }
+                if sessionMap[sid] == nil {
+                    sessionMap[sid] = (msg.timestamp ?? Date(), [msg])
+                } else {
+                    sessionMap[sid]?.messages.append(msg)
+                }
+            }
+
+            // Sort by most recent and create preview
+            return sessionMap.map { (id, data) in
+                let preview = data.messages
+                    .sorted { ($0.timestamp ?? Date()) < ($1.timestamp ?? Date()) }
+                    .first { $0.role == "user" }?
+                    .content ?? ""
+                return (id: id, date: data.date, preview: String(preview.prefix(100)))
+            }
+            .sorted { $0.date > $1.date }
+
+        } catch {
+            print("[CoreData] Fetch sessions failed: \(error)")
+            return []
+        }
+    }
+
+    func loadSession(id: String) {
+        UserDefaults.standard.set(id, forKey: "claude_carplay_session_id")
+        _sessionId = id
+    }
+
+    func deleteSession(id: String) {
+        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "MessageEntity")
+        request.predicate = NSPredicate(format: "sessionId == %@", id)
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: request)
+
+        do {
+            try context.execute(deleteRequest)
+            try context.save()
+        } catch {
+            print("[CoreData] Delete session failed: \(error)")
+        }
+    }
 }
 
 // MARK: - Core Data Entity
