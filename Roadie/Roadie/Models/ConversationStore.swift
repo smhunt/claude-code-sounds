@@ -6,7 +6,7 @@ import CoreData
 class ConversationStore {
     static let shared = ConversationStore()
 
-    private let containerName = "ClaudeCarPlay"
+    private let containerName = "Roadie"
 
     lazy var persistentContainer: NSPersistentContainer = {
         let container = NSPersistentContainer(name: containerName)

@@ -148,7 +148,7 @@ class SettingsViewController: UIViewController {
 
     private lazy var versionLabel: UILabel = {
         let l = UILabel()
-        l.text = "Claude CarPlay v1.0.0"
+        l.text = "Roadie v1.0.0"
         l.font = .systemFont(ofSize: 12, weight: .medium)
         l.textColor = .gray
         l.textAlignment = .center

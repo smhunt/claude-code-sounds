@@ -1,6 +1,6 @@
-# Claude for CarPlay
+# Roadie
 
-Your AI copilot for the road. Voice-powered. Hands-free. Thoughtful.
+Your AI copilot for the road. Voice-powered. Hands-free. Multi-AI.
 
 ## Modes
 
@@ -10,21 +10,21 @@ Your AI copilot for the road. Voice-powered. Hands-free. Thoughtful.
 | **Music** | DJ mode. Request songs, genres, vibes. Opens Apple Music/Spotify |
 | **Games** | Road trip entertainment. Trivia, 20 Questions, Would You Rather |
 | **News** | Briefings on topics you care about. Headlines, weather, sports |
-| **Chat** | Just talk. Claude as your thoughtful conversation companion |
+| **Chat** | Just talk. Your AI as a thoughtful conversation companion |
 
 ## Features
 
 - **Voice-First**: Continuous listening with smart silence detection
 - **Live Streaming**: Watch responses appear word by word
 - **Action Triggers**: "Navigate to X" actually opens Maps
-- **Waveform Visualizer**: See when Claude is listening/thinking/speaking
-- **Claude Aesthetic**: Warm orange tones, clean dark UI
+- **Waveform Visualizer**: See when AI is listening/thinking/speaking
+- **Multi-AI**: Choose Claude, Grok, or GPT-4
 - **CarPlay Native**: Tab bar with all modes on your car display
 
 ## Quick Start
 
 ```bash
-open ClaudeCarPlay.xcodeproj
+open Roadie.xcodeproj
 ```
 
 1. Build and run on your iPhone
@@ -34,7 +34,7 @@ open ClaudeCarPlay.xcodeproj
 ## Project Structure
 
 ```
-ClaudeCarPlay/
+Roadie/
 ├── Models/
 │   ├── AppMode.swift           # Mode definitions, prompts, colors
 │   ├── Config.swift            # Keychain + UserDefaults
@@ -46,9 +46,12 @@ ClaudeCarPlay/
 │   ├── OnboardingViewController.swift
 │   └── SettingsViewController.swift
 ├── Services/
+│   ├── AIProvider.swift            # Provider protocol
+│   ├── ClaudeProvider.swift        # Anthropic integration
+│   ├── GrokProvider.swift          # xAI integration
+│   ├── OpenAIProvider.swift        # OpenAI integration
 │   ├── SpeechRecognitionService.swift
 │   ├── TextToSpeechService.swift
-│   ├── ClaudeAPIService.swift
 │   └── ConversationManager.swift
 └── CarPlay/
     └── CarPlaySceneDelegate.swift  # Tab bar UI
@@ -56,32 +59,19 @@ ClaudeCarPlay/
 
 ## How Actions Work
 
-Claude's responses can trigger real actions:
+AI responses can trigger real actions:
 
 ```
 User: "Take me to the nearest Starbucks"
-Claude: "I'll get you to Starbucks. [[NAV:Starbucks near me]]"
+AI: "I'll get you to Starbucks. [[NAV:Starbucks near me]]"
 → App opens Apple Maps with that search
 ```
 
 ```
 User: "Play some jazz"
-Claude: "Let's get some jazz going! [[MUSIC:jazz playlist]]"
+AI: "Let's get some jazz going! [[MUSIC:jazz playlist]]"
 → App opens Apple Music with that search
 ```
-
-## API Costs
-
-Using `claude-sonnet-4-20250514`:
-- ~$0.003 per input 1K tokens
-- ~$0.015 per output 1K tokens
-- Typical conversation: < $0.01
-
-## CarPlay Setup
-
-**Simulator**: Run app → I/O → External Displays → CarPlay
-
-**Real Device**: Requires CarPlay entitlement from Apple MFi Program (1-2 weeks approval)
 
 ## Multi-AI Provider Support
 
@@ -99,6 +89,12 @@ Each provider needs its own API key:
 - GPT-4: `sk-...` from [platform.openai.com](https://platform.openai.com)
 
 Switch providers in Settings. Your API keys are stored securely in the iOS Keychain.
+
+## CarPlay Setup
+
+**Simulator**: Run app → I/O → External Displays → CarPlay
+
+**Real Device**: Requires CarPlay entitlement from Apple MFi Program (1-2 weeks approval)
 
 ## License
 

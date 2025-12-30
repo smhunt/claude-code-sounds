@@ -6,7 +6,7 @@ import Security
 class Config {
     static let shared = Config()
 
-    private let keychainService = "com.claude.carplay"
+    private let keychainService = "com.roadie.app"
 
     // MARK: - Provider Selection
 

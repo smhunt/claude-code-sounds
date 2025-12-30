@@ -5,7 +5,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>en</string>
     <key>CFBundleDisplayName</key>
-    <string>Claude CarPlay</string>
+    <string>Roadie</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -61,9 +61,9 @@
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Claude CarPlay needs microphone access to listen to your voice commands while driving.</string>
+    <string>Roadie needs microphone access to listen to your voice commands while driving.</string>
     <key>NSSpeechRecognitionUsageDescription</key>
-    <string>Claude CarPlay uses speech recognition to understand your voice commands.</string>
+    <string>Roadie uses speech recognition to understand your voice commands.</string>
     <key>UIBackgroundModes</key>
     <array>
         <string>audio</string>

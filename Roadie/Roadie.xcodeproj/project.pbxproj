@@ -53,7 +53,7 @@
 		A20000000000000000000011 /* Speech.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Speech.framework; path = System/Library/Frameworks/Speech.framework; sourceTree = SDKROOT; };
 		A20000000000000000000012 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		A20000000000000000000013 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A20000000000000000000014 /* ClaudeCarPlay.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ClaudeCarPlay.entitlements; sourceTree = "<group>"; };
+		A20000000000000000000014 /* Roadie.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Roadie.entitlements; sourceTree = "<group>"; };
 		A20000000000000000000020 /* ConversationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationStore.swift; sourceTree = "<group>"; };
 		A20000000000000000000021 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		A20000000000000000000022 /* OnboardingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewController.swift; sourceTree = "<group>"; };
@@ -66,7 +66,7 @@
 		A20000000000000000000033 /* ModePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModePickerView.swift; sourceTree = "<group>"; };
 		A20000000000000000000034 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
 		A20000000000000000000035 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A30000000000000000000001 /* ClaudeCarPlay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ClaudeCarPlay.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A30000000000000000000001 /* Roadie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Roadie.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,13 +87,13 @@
 		A50000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
-				A50000000000000000000002 /* ClaudeCarPlay */,
+				A50000000000000000000002 /* Roadie */,
 				A50000000000000000000006 /* Frameworks */,
 				A50000000000000000000007 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		A50000000000000000000002 /* ClaudeCarPlay */ = {
+		A50000000000000000000002 /* Roadie */ = {
 			isa = PBXGroup;
 			children = (
 				A20000000000000000000001 /* AppDelegate.swift */,
@@ -105,9 +105,9 @@
 				A50000000000000000000009 /* Base.lproj */,
 				A20000000000000000000035 /* Assets.xcassets */,
 				A20000000000000000000013 /* Info.plist */,
-				A20000000000000000000014 /* ClaudeCarPlay.entitlements */,
+				A20000000000000000000014 /* Roadie.entitlements */,
 			);
-			path = ClaudeCarPlay;
+			path = Roadie;
 			sourceTree = "<group>";
 		};
 		A50000000000000000000003 /* CarPlay */ = {
@@ -161,7 +161,7 @@
 		A50000000000000000000007 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A30000000000000000000001 /* ClaudeCarPlay.app */,
+				A30000000000000000000001 /* Roadie.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -187,7 +187,7 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A60000000000000000000001 /* ClaudeCarPlay */ = {
+		A60000000000000000000001 /* Roadie */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A80000000000000000000001;
 			buildPhases = (
@@ -199,8 +199,8 @@
 			);
 			dependencies = (
 			);
-			name = ClaudeCarPlay;
-			productName = ClaudeCarPlay;
+			name = Roadie;
+			productName = Roadie;
 			productReference = A30000000000000000000001;
 			productType = "com.apple.product-type.application";
 		};
@@ -227,7 +227,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A60000000000000000000001 /* ClaudeCarPlay */,
+				A60000000000000000000001 /* Roadie */,
 			);
 		};
 /* End PBXProject section */
@@ -314,17 +314,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = ClaudeCarPlay/ClaudeCarPlay.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Roadie/Roadie.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ClaudeCarPlay/Info.plist;
+				INFOPLIST_FILE = Roadie/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.claudecarplay.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.roadie.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -335,17 +335,17 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = ClaudeCarPlay/ClaudeCarPlay.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Roadie/Roadie.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
-				INFOPLIST_FILE = ClaudeCarPlay/Info.plist;
+				INFOPLIST_FILE = Roadie/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.claudecarplay.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.roadie.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -355,7 +355,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A80000000000000000000001 /* Build configuration list for PBXNativeTarget "ClaudeCarPlay" */ = {
+		A80000000000000000000001 /* Build configuration list for PBXNativeTarget "Roadie" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B20000000000000000000001 /* Debug */,
@@ -364,7 +364,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A80000000000000000000002 /* Build configuration list for PBXProject "ClaudeCarPlay" */ = {
+		A80000000000000000000002 /* Build configuration list for PBXProject "Roadie" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				B10000000000000000000001 /* Debug */,
