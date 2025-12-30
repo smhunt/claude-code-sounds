@@ -13,6 +13,10 @@
 		A10000000000000000000004 /* SpeechRecognitionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004; };
 		A10000000000000000000005 /* TextToSpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005; };
 		A10000000000000000000006 /* ClaudeAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006; };
+		A10000000000000000000040 /* AIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000040; };
+		A10000000000000000000041 /* ClaudeProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000041; };
+		A10000000000000000000042 /* GrokProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000042; };
+		A10000000000000000000043 /* OpenAIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000043; };
 		A10000000000000000000008 /* ConversationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008; };
 		A10000000000000000000009 /* TerminalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009; };
 		A10000000000000000000010 /* CarPlay.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010; };
@@ -39,6 +43,10 @@
 		A20000000000000000000004 /* SpeechRecognitionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechRecognitionService.swift; sourceTree = "<group>"; };
 		A20000000000000000000005 /* TextToSpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextToSpeechService.swift; sourceTree = "<group>"; };
 		A20000000000000000000006 /* ClaudeAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeAPIService.swift; sourceTree = "<group>"; };
+		A20000000000000000000040 /* AIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIProvider.swift; sourceTree = "<group>"; };
+		A20000000000000000000041 /* ClaudeProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeProvider.swift; sourceTree = "<group>"; };
+		A20000000000000000000042 /* GrokProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GrokProvider.swift; sourceTree = "<group>"; };
+		A20000000000000000000043 /* OpenAIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIProvider.swift; sourceTree = "<group>"; };
 		A20000000000000000000008 /* ConversationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationManager.swift; sourceTree = "<group>"; };
 		A20000000000000000000009 /* TerminalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalView.swift; sourceTree = "<group>"; };
 		A20000000000000000000010 /* CarPlay.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CarPlay.framework; path = System/Library/Frameworks/CarPlay.framework; sourceTree = SDKROOT; };
@@ -113,6 +121,10 @@
 		A50000000000000000000004 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A20000000000000000000040 /* AIProvider.swift */,
+				A20000000000000000000041 /* ClaudeProvider.swift */,
+				A20000000000000000000042 /* GrokProvider.swift */,
+				A20000000000000000000043 /* OpenAIProvider.swift */,
 				A20000000000000000000004 /* SpeechRecognitionService.swift */,
 				A20000000000000000000005 /* TextToSpeechService.swift */,
 				A20000000000000000000006 /* ClaudeAPIService.swift */,
@@ -240,6 +252,10 @@
 				A10000000000000000000001 /* AppDelegate.swift in Sources */,
 				A10000000000000000000002 /* SceneDelegate.swift in Sources */,
 				A10000000000000000000003 /* CarPlaySceneDelegate.swift in Sources */,
+				A10000000000000000000040 /* AIProvider.swift in Sources */,
+				A10000000000000000000041 /* ClaudeProvider.swift in Sources */,
+				A10000000000000000000042 /* GrokProvider.swift in Sources */,
+				A10000000000000000000043 /* OpenAIProvider.swift in Sources */,
 				A10000000000000000000004 /* SpeechRecognitionService.swift in Sources */,
 				A10000000000000000000005 /* TextToSpeechService.swift in Sources */,
 				A10000000000000000000006 /* ClaudeAPIService.swift in Sources */,

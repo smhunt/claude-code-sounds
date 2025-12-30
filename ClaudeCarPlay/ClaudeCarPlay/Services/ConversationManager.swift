@@ -7,7 +7,7 @@ class ConversationManager: NSObject {
 
     private let speechRecognition = SpeechRecognitionService()
     private let tts = TextToSpeechService()
-    private let claudeAPI = ClaudeAPIService()
+    private var aiProvider: AIProvider
     private let store = ConversationStore.shared
 
     // MARK: - State
@@ -38,6 +38,7 @@ class ConversationManager: NSObject {
     // MARK: - Init
 
     override init() {
+        aiProvider = AIProviderFactory.createCurrentProvider()
         super.init()
         commonInit()
     }
@@ -45,6 +46,7 @@ class ConversationManager: NSObject {
     init(terminalView: TerminalView? = nil, carPlayDelegate: CarPlaySceneDelegate? = nil) {
         self.terminalView = terminalView
         self.carPlayDelegate = carPlayDelegate
+        aiProvider = AIProviderFactory.createCurrentProvider()
         super.init()
         commonInit()
     }
@@ -52,8 +54,23 @@ class ConversationManager: NSObject {
     private func commonInit() {
         speechRecognition.delegate = self
         tts.delegate = self
-        claudeAPI.delegate = self
+        aiProvider.delegate = self
         loadHistory()
+    }
+
+    /// Switch to a different AI provider
+    func switchProvider(to type: AIProviderType) {
+        aiProvider.cancel()
+        aiProvider = AIProviderFactory.createProvider(type: type)
+        aiProvider.delegate = self
+        Config.shared.selectedProvider = type
+    }
+
+    /// Refresh the provider (call after settings change)
+    func refreshProvider() {
+        aiProvider.cancel()
+        aiProvider = AIProviderFactory.createCurrentProvider()
+        aiProvider.delegate = self
     }
 
     // MARK: - Public Methods
@@ -102,7 +119,7 @@ class ConversationManager: NSObject {
         conversationHistory = store.loadMessages()
     }
 
-    private func sendToClaude(_ text: String) {
+    private func sendToAI(_ text: String) {
         guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             startListening()
             return
@@ -117,8 +134,8 @@ class ConversationManager: NSObject {
         store.saveMessage(role: "user", content: text)
         onMessageReceived?("user", text)
 
-        // Send to Claude with mode-specific prompt
-        claudeAPI.sendMessage(text, conversationHistory: conversationHistory, systemPrompt: currentMode.systemPrompt)
+        // Send to AI provider with mode-specific prompt
+        aiProvider.sendMessage(text, conversationHistory: conversationHistory, systemPrompt: currentMode.systemPrompt)
     }
 
     private func parseActions(_ text: String) {
@@ -157,7 +174,7 @@ extension ConversationManager: SpeechRecognitionDelegate {
 
         if isFinal && !text.isEmpty {
             speechRecognition.stopListening()
-            sendToClaude(text)
+            sendToAI(text)
         }
     }
 
@@ -173,9 +190,9 @@ extension ConversationManager: SpeechRecognitionDelegate {
     }
 }
 
-// MARK: - Claude API Delegate
+// MARK: - AI Provider Delegate
 
-extension ConversationManager: ClaudeAPIDelegate {
+extension ConversationManager: AIProviderDelegate {
 
     func didReceiveStreamChunk(_ text: String) {
         currentResponse += text

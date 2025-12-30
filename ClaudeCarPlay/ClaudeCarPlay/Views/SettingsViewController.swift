@@ -86,9 +86,20 @@ class SettingsViewController: UIViewController {
         return seg
     }()
 
+    private lazy var providerPicker: UISegmentedControl = {
+        let items = AIProviderType.allCases.map { $0.displayName }
+        let seg = UISegmentedControl(items: items)
+        seg.selectedSegmentIndex = AIProviderType.allCases.firstIndex(of: Config.shared.selectedProvider) ?? 0
+        seg.selectedSegmentTintColor = claudeOrange
+        seg.setTitleTextAttributes([.foregroundColor: UIColor.white], for: .normal)
+        seg.setTitleTextAttributes([.foregroundColor: UIColor.black], for: .selected)
+        seg.addTarget(self, action: #selector(providerChanged), for: .valueChanged)
+        return seg
+    }()
+
     private lazy var apiKeyField: UITextField = {
         let f = UITextField()
-        f.placeholder = "sk-ant-..."
+        f.placeholder = Config.shared.selectedProvider.apiKeyPlaceholder
         f.font = .monospacedSystemFont(ofSize: 14, weight: .regular)
         f.textColor = .white
         f.backgroundColor = cardBackground
@@ -100,10 +111,17 @@ class SettingsViewController: UIViewController {
         f.isSecureTextEntry = true
         f.autocapitalizationType = .none
         f.attributedPlaceholder = NSAttributedString(
-            string: "sk-ant-...",
+            string: Config.shared.selectedProvider.apiKeyPlaceholder,
             attributes: [.foregroundColor: UIColor.gray]
         )
         return f
+    }()
+
+    private lazy var providerStatusLabel: UILabel = {
+        let l = UILabel()
+        l.font = .systemFont(ofSize: 12, weight: .medium)
+        l.textAlignment = .center
+        return l
     }()
 
     private lazy var newSessionButton: UIButton = {
@@ -199,11 +217,14 @@ class SettingsViewController: UIViewController {
 
         stackView.addArrangedSubview(createSpacer(16))
 
-        // API Section
-        stackView.addArrangedSubview(createSectionCard(title: "API Key", items: [
-            apiKeyField
+        // AI Provider Section
+        stackView.addArrangedSubview(createSectionCard(title: "AI Provider", items: [
+            createLabeledRow(title: "Select Provider", control: providerPicker),
+            apiKeyField,
+            providerStatusLabel
         ]))
         apiKeyField.heightAnchor.constraint(equalToConstant: 48).isActive = true
+        updateProviderStatus()
 
         stackView.addArrangedSubview(createSpacer(16))
 
@@ -235,12 +256,20 @@ class SettingsViewController: UIViewController {
     }
 
     private func loadValues() {
-        apiKeyField.text = Config.shared.apiKey
+        // Load provider selection
+        let currentProvider = Config.shared.selectedProvider
+        providerPicker.selectedSegmentIndex = AIProviderType.allCases.firstIndex(of: currentProvider) ?? 0
+        apiKeyField.text = Config.shared.apiKey(for: currentProvider)
+        apiKeyField.placeholder = currentProvider.apiKeyPlaceholder
+
+        // Load other settings
         findSwitch(in: voiceToggle)?.isOn = Config.shared.voiceEnabled
         findSwitch(in: autoListenToggle)?.isOn = Config.shared.autoListen
         findSwitch(in: hapticToggle)?.isOn = Config.shared.hapticFeedback
         speechRateSlider.value = Config.shared.speechRate
         voicePicker.selectedSegmentIndex = Config.shared.selectedVoiceIndex
+
+        updateProviderStatus()
     }
 
     private func findSwitch(in view: UIView) -> UISwitch? {
@@ -254,8 +283,12 @@ class SettingsViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func saveTapped() {
+        // Save API key for current provider
+        let currentProvider = AIProviderType.allCases[providerPicker.selectedSegmentIndex]
+        Config.shared.selectedProvider = currentProvider
+
         if let key = apiKeyField.text, !key.isEmpty {
-            Config.shared.apiKey = key
+            Config.shared.setApiKey(key, for: currentProvider)
         }
 
         Config.shared.voiceEnabled = findSwitch(in: voiceToggle)?.isOn ?? true
@@ -281,6 +314,47 @@ class SettingsViewController: UIViewController {
             self?.dismiss(animated: true)
         })
         present(alert, animated: true)
+    }
+
+    @objc private func providerChanged() {
+        // Save current key before switching
+        if let currentText = apiKeyField.text, !currentText.isEmpty {
+            Config.shared.setApiKey(currentText, for: Config.shared.selectedProvider)
+        }
+
+        // Switch provider
+        let newProvider = AIProviderType.allCases[providerPicker.selectedSegmentIndex]
+        Config.shared.selectedProvider = newProvider
+
+        // Update UI
+        apiKeyField.text = Config.shared.apiKey(for: newProvider)
+        apiKeyField.placeholder = newProvider.apiKeyPlaceholder
+        apiKeyField.attributedPlaceholder = NSAttributedString(
+            string: newProvider.apiKeyPlaceholder,
+            attributes: [.foregroundColor: UIColor.gray]
+        )
+
+        // Update accent color
+        let color = UIColor(
+            red: newProvider.accentColor.r,
+            green: newProvider.accentColor.g,
+            blue: newProvider.accentColor.b,
+            alpha: 1.0
+        )
+        providerPicker.selectedSegmentTintColor = color
+
+        updateProviderStatus()
+    }
+
+    private func updateProviderStatus() {
+        let provider = AIProviderFactory.createCurrentProvider()
+        if provider.isConfigured() {
+            providerStatusLabel.text = "\(provider.name) is configured"
+            providerStatusLabel.textColor = UIColor(red: 0.3, green: 0.8, blue: 0.4, alpha: 1.0)
+        } else {
+            providerStatusLabel.text = "Enter your \(provider.name) API key"
+            providerStatusLabel.textColor = .gray
+        }
     }
 
     // MARK: - Helpers

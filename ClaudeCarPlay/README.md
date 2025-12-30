@@ -83,15 +83,22 @@ Using `claude-sonnet-4-20250514`:
 
 **Real Device**: Requires CarPlay entitlement from Apple MFi Program (1-2 weeks approval)
 
-## Future: Multi-Platform
+## Multi-AI Provider Support
 
-This is the Claude version. The architecture supports:
-- GPT-4o (OpenAI)
-- Gemini (Google)
-- Grok (xAI)
-- Local models (Ollama)
+Choose your preferred AI in Settings:
 
-But Claude is best.
+| Provider | Model | Status |
+|----------|-------|--------|
+| **Claude** | claude-sonnet-4 | Default |
+| **Grok** | grok-3 | Supported |
+| **GPT-4** | gpt-4o | Supported |
+
+Each provider needs its own API key:
+- Claude: `sk-ant-...` from [console.anthropic.com](https://console.anthropic.com)
+- Grok: `xai-...` from [x.ai](https://x.ai)
+- GPT-4: `sk-...` from [platform.openai.com](https://platform.openai.com)
+
+Switch providers in Settings. Your API keys are stored securely in the iOS Keychain.
 
 ## License
 
