@@ -3,7 +3,7 @@ import AVFoundation
 
 protocol SpeechRecognitionDelegate: AnyObject {
     func didRecognizeSpeech(_ text: String, isFinal: Bool)
-    func didFailWithError(_ error: Error)
+    func speechRecognitionDidFail(_ error: Error)
 }
 
 class SpeechRecognitionService {
@@ -18,38 +18,93 @@ class SpeechRecognitionService {
     private var silenceTimer: Timer?
     private let silenceThreshold: TimeInterval = 1.5
 
+    private var isStarting = false
+    private var isStopping = false
+    private var hasTap = false
+
     var isListening: Bool {
-        audioEngine.isRunning
+        audioEngine.isRunning && !isStopping
     }
 
     func startListening() {
+        DispatchQueue.main.async { [weak self] in
+            self?.doStartListening()
+        }
+    }
+
+    private func doStartListening() {
         guard !audioEngine.isRunning else { return }
+        guard !isStarting && !isStopping else { return }
+
+        isStarting = true
+        defer { isStarting = false }
 
         do {
             try startRecognition()
         } catch {
-            delegate?.didFailWithError(error)
+            delegate?.speechRecognitionDidFail(error)
         }
     }
 
     func stopListening() {
-        audioEngine.stop()
-        audioEngine.inputNode.removeTap(onBus: 0)
-        recognitionRequest?.endAudio()
-        recognitionTask?.cancel()
-        recognitionRequest = nil
-        recognitionTask = nil
+        DispatchQueue.main.async { [weak self] in
+            self?.doStopListening()
+        }
+    }
+
+    private func doStopListening() {
+        guard !isStopping else { return }
+        isStopping = true
+        defer { isStopping = false }
+
         silenceTimer?.invalidate()
+        silenceTimer = nil
+
+        recognitionTask?.cancel()
+        recognitionTask = nil
+
+        recognitionRequest?.endAudio()
+        recognitionRequest = nil
+
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+
+        if hasTap {
+            audioEngine.inputNode.removeTap(onBus: 0)
+            hasTap = false
+        }
     }
 
     private func startRecognition() throws {
-        // Cancel previous task
+        // Clean up previous session
         recognitionTask?.cancel()
         recognitionTask = nil
 
         let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.duckOthers, .allowBluetooth])
+        // Use spokenAudio mode - optimized for speech recognition
+        try audioSession.setCategory(
+            .playAndRecord,
+            mode: .spokenAudio,
+            options: [.defaultToSpeaker, .allowBluetoothA2DP, .allowAirPlay]
+        )
         try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+
+        // Boost input gain for better sensitivity
+        if audioSession.isInputGainSettable {
+            try? audioSession.setInputGain(1.0)  // Max gain
+        }
+
+        // Try to select Bluetooth mic if available
+        if let availableInputs = audioSession.availableInputs {
+            for input in availableInputs {
+                if input.portType == .bluetoothHFP || input.portType == .bluetoothA2DP || input.portType == .bluetoothLE {
+                    try? audioSession.setPreferredInput(input)
+                    print("[Speech] Using Bluetooth input: \(input.portName)")
+                    break
+                }
+            }
+        }
 
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
 
@@ -63,9 +118,17 @@ class SpeechRecognitionService {
         let inputNode = audioEngine.inputNode
         let recordingFormat = inputNode.outputFormat(forBus: 0)
 
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] buffer, _ in
+        // Remove existing tap if present
+        if hasTap {
+            inputNode.removeTap(onBus: 0)
+            hasTap = false
+        }
+
+        // Use smaller buffer for more responsive recognition
+        inputNode.installTap(onBus: 0, bufferSize: 512, format: recordingFormat) { [weak self] buffer, _ in
             self?.recognitionRequest?.append(buffer)
         }
+        hasTap = true
 
         audioEngine.prepare()
         try audioEngine.start()
@@ -78,7 +141,9 @@ class SpeechRecognitionService {
                 let isFinal = result.isFinal
 
                 // Reset silence timer on new speech
-                self.resetSilenceTimer()
+                DispatchQueue.main.async {
+                    self.resetSilenceTimer()
+                }
 
                 self.delegate?.didRecognizeSpeech(text, isFinal: isFinal)
 
@@ -88,7 +153,11 @@ class SpeechRecognitionService {
             }
 
             if let error = error {
-                self.delegate?.didFailWithError(error)
+                let nsError = error as NSError
+                // Ignore cancellation errors
+                if nsError.domain != "kAFAssistantErrorDomain" || nsError.code != 216 {
+                    self.delegate?.speechRecognitionDidFail(error)
+                }
                 self.restartRecognition()
             }
         }
@@ -103,9 +172,11 @@ class SpeechRecognitionService {
     }
 
     private func restartRecognition() {
-        stopListening()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-            self?.startListening()
+        DispatchQueue.main.async { [weak self] in
+            self?.doStopListening()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                self?.doStartListening()
+            }
         }
     }
 }

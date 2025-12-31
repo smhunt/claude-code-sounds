@@ -265,6 +265,9 @@ class OnboardingViewController: UIViewController {
             subtitleLabel.text = "Just say what you need.\nNavigation. Music. Games. Conversation."
             primaryButton.setTitle("Start Driving", for: .normal)
             modePreviewStack.isHidden = false
+
+        default:
+            break
         }
     }
 
@@ -319,8 +322,14 @@ class OnboardingViewController: UIViewController {
         let group = DispatchGroup()
 
         group.enter()
-        AVAudioSession.sharedInstance().requestRecordPermission { _ in
-            group.leave()
+        if #available(iOS 17.0, *) {
+            AVAudioApplication.requestRecordPermission { _ in
+                group.leave()
+            }
+        } else {
+            AVAudioSession.sharedInstance().requestRecordPermission { _ in
+                group.leave()
+            }
         }
 
         group.enter()

@@ -178,7 +178,7 @@ extension ConversationManager: SpeechRecognitionDelegate {
         }
     }
 
-    func didFailWithError(_ error: Error) {
+    func speechRecognitionDidFail(_ error: Error) {
         let message = error.localizedDescription
         if !message.contains("cancelled") {
             onStatusChange?("Mic Error")

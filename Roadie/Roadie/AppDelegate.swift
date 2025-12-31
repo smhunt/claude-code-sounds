@@ -12,9 +12,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     private func requestPermissions() {
-        // Mic permission
-        AVAudioSession.sharedInstance().requestRecordPermission { granted in
-            print("[AppDelegate] Mic access: \(granted)")
+        // Mic permission (iOS 17+)
+        if #available(iOS 17.0, *) {
+            AVAudioApplication.requestRecordPermission { granted in
+                print("[AppDelegate] Mic access: \(granted)")
+            }
+        } else {
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                print("[AppDelegate] Mic access: \(granted)")
+            }
         }
 
         // Speech recognition permission
@@ -26,7 +32,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private func setupAudioSession() {
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth, .mixWithOthers])
+            // voiceChat mode optimizes for speech and works well with AirPods
+            try session.setCategory(
+                .playAndRecord,
+                mode: .voiceChat,
+                options: [.defaultToSpeaker, .allowBluetoothA2DP, .allowAirPlay, .mixWithOthers]
+            )
             try session.setActive(true)
         } catch {
             print("[AppDelegate] Audio session error: \(error)")

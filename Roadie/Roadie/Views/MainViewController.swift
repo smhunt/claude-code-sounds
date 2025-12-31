@@ -54,6 +54,8 @@ class MainViewController: UIViewController {
         tv.separatorStyle = .none
         tv.showsVerticalScrollIndicator = false
         tv.contentInset = UIEdgeInsets(top: 20, left: 0, bottom: 100, right: 0)
+        tv.rowHeight = UITableView.automaticDimension
+        tv.estimatedRowHeight = 60
         return tv
     }()
 
