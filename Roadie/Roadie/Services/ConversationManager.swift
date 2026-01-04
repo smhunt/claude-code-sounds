@@ -17,6 +17,7 @@ class ConversationManager: NSObject {
     private var currentResponse = ""
     private var isProcessing = false
     private(set) var isSpeaking = false
+    private var userPaused = false  // True when user intentionally stopped
 
     var currentMode: AppMode = .drive {
         didSet {
@@ -78,21 +79,23 @@ class ConversationManager: NSObject {
 
     func startListening() {
         guard !isProcessing else { return }
+        guard !isSpeaking else { return }
         guard Config.shared.hasValidApiKey else {
             onStatusChange?("No API Key")
             return
         }
 
-        if Config.shared.autoListen {
-            speechRecognition.startListening()
-            onStatusChange?("Listening...")
-            hapticFeedback(.light)
-        }
+        userPaused = false  // Clear pause state
+        speechRecognition.startListening()
+        onStatusChange?("Listening...")
+        hapticFeedback(.light)
     }
 
     func stopListening() {
+        userPaused = true  // User intentionally paused
         speechRecognition.stopListening()
-        onStatusChange?("Paused")
+        onStatusChange?("Tap to speak")
+        hapticFeedback(.light)
     }
 
     func toggleListening() {
@@ -105,29 +108,26 @@ class ConversationManager: NSObject {
 
     /// Stop AI speech immediately (user interrupt)
     func stopSpeaking() {
+        userPaused = true  // User interrupted, stay paused
         tts.stop()
         aiProvider.cancel()
         isSpeaking = false
         isProcessing = false
-        onStatusChange?("Stopped")
+        onStatusChange?("Stopped - tap to speak")
         hapticFeedback(.medium)
-
-        // Resume listening after a brief pause
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.startListening()
-        }
+        // Don't auto-resume - user stopped it
     }
 
     /// Handle mic button tap - context-aware behavior
     func handleMicTap() {
-        if isSpeaking {
-            // Stop the AI mid-speech
+        if isSpeaking || isProcessing {
+            // Stop the AI mid-speech or mid-processing
             stopSpeaking()
         } else if speechRecognition.isListening {
-            // Stop listening
+            // Stop listening (user wants pause)
             stopListening()
         } else {
-            // Start listening
+            // Start listening (user wants to speak)
             startListening()
         }
     }
@@ -291,8 +291,17 @@ extension ConversationManager: TextToSpeechDelegate {
 
     func didFinishSpeaking() {
         isSpeaking = false
-        if !isProcessing && Config.shared.autoListen {
-            startListening()
+        // Only auto-resume if user hasn't paused and autoListen is enabled
+        if !isProcessing && !userPaused && Config.shared.autoListen {
+            // Add delay to prevent picking up echo/reverb from speaker
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                guard let self = self else { return }
+                // Double-check state hasn't changed
+                guard !self.isSpeaking, !self.isProcessing, !self.userPaused else { return }
+                self.startListening()
+            }
+        } else {
+            onStatusChange?("Tap to speak")
         }
     }
 }

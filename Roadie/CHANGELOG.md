@@ -2,6 +2,16 @@
 
 All notable changes to Roadie will be documented in this file.
 
+## [0.3.1] - 2025-01-04
+
+### Fixed
+- **Feedback loop prevention**: Added 1-second delay before auto-listen resumes after AI finishes speaking
+- **Proper pause state**: When user taps to stop, it stays stopped (no more auto-unmuting)
+- **User intent tracking**: New `userPaused` flag ensures user control is respected
+- Status messages now show "Tap to speak" when paused for clarity
+
+---
+
 ## [0.3.0] - 2025-01-04
 
 ### Added
