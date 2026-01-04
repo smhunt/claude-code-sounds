@@ -2,6 +2,16 @@
 
 All notable changes to Roadie will be documented in this file.
 
+## [0.3.2] - 2025-01-04
+
+### Fixed
+- **Removed auto-start**: App no longer auto-starts listening on launch - user must tap to begin
+- **Stopped mic cycling**: Removed auto-restart logic from SpeechRecognitionService
+- **Better error handling**: Mic errors no longer trigger auto-retry loop
+- **CarPlay stability**: CarPlay and TerminalView no longer auto-start listening
+
+---
+
 ## [0.3.1] - 2025-01-04
 
 ### Fixed

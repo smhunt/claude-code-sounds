@@ -93,7 +93,7 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
         conversationManager?.onStreamChunk = { [weak self] _ in
             // Could update in real-time but CarPlay updates are expensive
         }
-        conversationManager?.startListening()
+        // Don't auto-start - let user tap to begin
     }
 
     // MARK: - Updates

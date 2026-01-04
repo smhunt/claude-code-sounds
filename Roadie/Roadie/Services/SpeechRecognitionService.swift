@@ -147,18 +147,18 @@ class SpeechRecognitionService {
 
                 self.delegate?.didRecognizeSpeech(text, isFinal: isFinal)
 
-                if isFinal {
-                    self.restartRecognition()
-                }
+                // Don't auto-restart - let ConversationManager handle it
             }
 
             if let error = error {
                 let nsError = error as NSError
-                // Ignore cancellation errors
-                if nsError.domain != "kAFAssistantErrorDomain" || nsError.code != 216 {
+                // Ignore cancellation errors (code 216) and "no speech detected" (code 1110)
+                let ignoreCodes = [216, 1110, 301, 203]
+                if nsError.domain != "kAFAssistantErrorDomain" || !ignoreCodes.contains(nsError.code) {
+                    print("[Speech] Error: \(nsError.domain) code \(nsError.code)")
                     self.delegate?.speechRecognitionDidFail(error)
                 }
-                self.restartRecognition()
+                // Don't auto-restart on error - let ConversationManager decide
             }
         }
     }
@@ -168,15 +168,6 @@ class SpeechRecognitionService {
         silenceTimer = Timer.scheduledTimer(withTimeInterval: silenceThreshold, repeats: false) { [weak self] _ in
             // Silence detected - finalize current recognition
             self?.recognitionRequest?.endAudio()
-        }
-    }
-
-    private func restartRecognition() {
-        DispatchQueue.main.async { [weak self] in
-            self?.doStopListening()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
-                self?.doStartListening()
-            }
         }
     }
 }

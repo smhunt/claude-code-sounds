@@ -173,7 +173,7 @@ class TerminalViewController: UIViewController, OnboardingDelegate, SettingsDele
             self?.statusLabel.text = status
             self?.updateMicButton(status: status)
         }
-        conversationManager?.startListening()
+        // Don't auto-start - let user tap to begin
     }
 
     private func updateMicButton(status: String) {

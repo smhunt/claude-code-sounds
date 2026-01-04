@@ -210,13 +210,15 @@ extension ConversationManager: SpeechRecognitionDelegate {
 
     func speechRecognitionDidFail(_ error: Error) {
         let message = error.localizedDescription
-        if !message.contains("cancelled") {
-            onStatusChange?("Mic Error")
+        print("[ConversationManager] Speech error: \(message)")
+
+        // Don't show error for common/expected issues
+        if !message.contains("cancelled") && !message.contains("No speech") {
+            onStatusChange?("Mic Error - tap to retry")
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-            self?.startListening()
-        }
+        // Don't auto-restart - let user tap to retry
+        userPaused = true
     }
 }
 
