@@ -64,10 +64,14 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
             completion()
         }
 
-        // Sample prompts for this mode
+        // Sample prompts for this mode - tapping sends to AI
         let hints = mode.placeholderHints.prefix(2).map { hint -> CPListItem in
-            let item = CPListItem(text: hint, detailText: nil)
-            item.handler = { _, completion in completion() }
+            let item = CPListItem(text: hint, detailText: "Tap to ask")
+            item.handler = { [weak self] _, completion in
+                self?.conversationManager?.currentMode = mode
+                self?.conversationManager?.sendText(hint)
+                completion()
+            }
             return item
         }
 
@@ -161,8 +165,11 @@ extension CarPlaySceneDelegate: CPTabBarTemplateDelegate {
         }
 
         let hints = mode.placeholderHints.prefix(2).map { hint -> CPListItem in
-            let item = CPListItem(text: hint, detailText: nil)
-            item.handler = { _, completion in completion() }
+            let item = CPListItem(text: hint, detailText: "Tap to ask")
+            item.handler = { [weak self] _, completion in
+                self?.conversationManager?.sendText(hint)
+                completion()
+            }
             return item
         }
 

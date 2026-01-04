@@ -106,6 +106,17 @@ class ConversationManager: NSObject {
         }
     }
 
+    /// Send text directly to AI (for quick-tap suggestions)
+    func sendText(_ text: String) {
+        guard !isProcessing else { return }
+        guard !isSpeaking else { return }
+        guard Config.shared.hasValidApiKey else {
+            onStatusChange?("No API Key")
+            return
+        }
+        sendToAI(text)
+    }
+
     /// Stop AI speech immediately (user interrupt)
     func stopSpeaking() {
         userPaused = true  // User interrupted, stay paused

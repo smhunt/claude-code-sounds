@@ -11,7 +11,11 @@ class OnboardingViewController: UIViewController {
     weak var delegate: OnboardingDelegate?
 
     private var currentPage = 0
-    private let pages = ["welcome", "permissions", "apikey", "ready"]
+    private let pages = ["welcome", "permissions", "micconfig", "apikey", "ready"]
+
+    // Mic testing
+    private var audioEngine: AVAudioEngine?
+    private var micLevelTimer: Timer?
 
     // MARK: - UI Elements
 
@@ -90,7 +94,7 @@ class OnboardingViewController: UIViewController {
     private let pageControl: UIPageControl = {
         let p = UIPageControl()
         p.translatesAutoresizingMaskIntoConstraints = false
-        p.numberOfPages = 4
+        p.numberOfPages = 5
         p.currentPageIndicatorTintColor = AppMode.claudeOrange
         p.pageIndicatorTintColor = UIColor(white: 0.3, alpha: 1)
         return p
@@ -104,6 +108,53 @@ class OnboardingViewController: UIViewController {
         sv.spacing = 20
         sv.isHidden = true
         return sv
+    }()
+
+    // Mic config UI
+    private let micConfigContainer: UIView = {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.isHidden = true
+        return v
+    }()
+
+    private let micLevelBar: UIView = {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.backgroundColor = UIColor(white: 0.2, alpha: 1)
+        v.layer.cornerRadius = 8
+        return v
+    }()
+
+    private let micLevelFill: UIView = {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.backgroundColor = AppMode.claudeOrange
+        v.layer.cornerRadius = 6
+        return v
+    }()
+
+    private var micLevelFillWidthConstraint: NSLayoutConstraint?
+
+    private let micStatusLabel: UILabel = {
+        let l = UILabel()
+        l.translatesAutoresizingMaskIntoConstraints = false
+        l.font = .systemFont(ofSize: 14, weight: .medium)
+        l.textColor = UIColor(white: 0.6, alpha: 1)
+        l.textAlignment = .center
+        l.text = "Speak to test your microphone"
+        return l
+    }()
+
+    private let micTestButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.translatesAutoresizingMaskIntoConstraints = false
+        b.titleLabel?.font = .systemFont(ofSize: 15, weight: .medium)
+        b.setTitleColor(.white, for: .normal)
+        b.backgroundColor = UIColor(white: 0.2, alpha: 1)
+        b.layer.cornerRadius = 10
+        b.setTitle("Start Mic Test", for: .normal)
+        return b
     }()
 
     // MARK: - Lifecycle
@@ -124,6 +175,7 @@ class OnboardingViewController: UIViewController {
         view.addSubview(subtitleLabel)
         view.addSubview(modePreviewStack)
         view.addSubview(apiKeyField)
+        view.addSubview(micConfigContainer)
         view.addSubview(primaryButton)
         view.addSubview(pageControl)
 
@@ -132,6 +184,14 @@ class OnboardingViewController: UIViewController {
             let item = createModePreviewItem(mode: mode)
             modePreviewStack.addArrangedSubview(item)
         }
+
+        // Setup mic config container
+        micConfigContainer.addSubview(micLevelBar)
+        micLevelBar.addSubview(micLevelFill)
+        micConfigContainer.addSubview(micStatusLabel)
+        micConfigContainer.addSubview(micTestButton)
+
+        micLevelFillWidthConstraint = micLevelFill.widthAnchor.constraint(equalToConstant: 0)
 
         NSLayoutConstraint.activate([
             backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -163,6 +223,30 @@ class OnboardingViewController: UIViewController {
             apiKeyField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
             apiKeyField.heightAnchor.constraint(equalToConstant: 56),
 
+            // Mic config container
+            micConfigContainer.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 24),
+            micConfigContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
+            micConfigContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
+            micConfigContainer.heightAnchor.constraint(equalToConstant: 120),
+
+            micLevelBar.topAnchor.constraint(equalTo: micConfigContainer.topAnchor),
+            micLevelBar.leadingAnchor.constraint(equalTo: micConfigContainer.leadingAnchor),
+            micLevelBar.trailingAnchor.constraint(equalTo: micConfigContainer.trailingAnchor),
+            micLevelBar.heightAnchor.constraint(equalToConstant: 40),
+
+            micLevelFill.leadingAnchor.constraint(equalTo: micLevelBar.leadingAnchor, constant: 4),
+            micLevelFill.centerYAnchor.constraint(equalTo: micLevelBar.centerYAnchor),
+            micLevelFill.heightAnchor.constraint(equalToConstant: 32),
+            micLevelFillWidthConstraint!,
+
+            micStatusLabel.topAnchor.constraint(equalTo: micLevelBar.bottomAnchor, constant: 12),
+            micStatusLabel.centerXAnchor.constraint(equalTo: micConfigContainer.centerXAnchor),
+
+            micTestButton.topAnchor.constraint(equalTo: micStatusLabel.bottomAnchor, constant: 12),
+            micTestButton.centerXAnchor.constraint(equalTo: micConfigContainer.centerXAnchor),
+            micTestButton.widthAnchor.constraint(equalToConstant: 140),
+            micTestButton.heightAnchor.constraint(equalToConstant: 36),
+
             primaryButton.bottomAnchor.constraint(equalTo: pageControl.topAnchor, constant: -32),
             primaryButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
             primaryButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
@@ -173,6 +257,7 @@ class OnboardingViewController: UIViewController {
         ])
 
         primaryButton.addTarget(self, action: #selector(primaryTapped), for: .touchUpInside)
+        micTestButton.addTarget(self, action: #selector(micTestTapped), for: .touchUpInside)
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         view.addGestureRecognizer(tap)
@@ -236,6 +321,12 @@ class OnboardingViewController: UIViewController {
         pageControl.currentPage = page
         apiKeyField.isHidden = true
         modePreviewStack.isHidden = true
+        micConfigContainer.isHidden = true
+
+        // Stop mic test when leaving that page
+        if pages[page] != "micconfig" {
+            stopMicTest()
+        }
 
         switch pages[page] {
         case "welcome":
@@ -250,6 +341,14 @@ class OnboardingViewController: UIViewController {
             titleLabel.text = "Voice Access"
             subtitleLabel.text = "Claude needs to hear you.\nWe'll ask for microphone and speech recognition."
             primaryButton.setTitle("Grant Access", for: .normal)
+
+        case "micconfig":
+            iconLabel.text = "🎙️"
+            titleLabel.text = "Microphone Setup"
+            subtitleLabel.text = "Test your mic to ensure Claude can hear you clearly."
+            primaryButton.setTitle("Continue", for: .normal)
+            micConfigContainer.isHidden = false
+            micStatusLabel.text = "Tap 'Start Mic Test' to begin"
 
         case "apikey":
             iconLabel.text = "🔑"
@@ -283,6 +382,10 @@ class OnboardingViewController: UIViewController {
                 self?.updateForPage(2)
             }
 
+        case "micconfig":
+            stopMicTest()
+            updateForPage(3)
+
         case "apikey":
             guard let key = apiKeyField.text, !key.isEmpty else {
                 shakeField()
@@ -290,7 +393,7 @@ class OnboardingViewController: UIViewController {
             }
             Config.shared.apiKey = key
             if Config.shared.hasValidApiKey {
-                updateForPage(3)
+                updateForPage(4)
             } else {
                 shakeField()
             }
@@ -302,6 +405,109 @@ class OnboardingViewController: UIViewController {
             delegate?.onboardingDidComplete()
         default:
             break
+        }
+    }
+
+    @objc private func micTestTapped() {
+        if audioEngine?.isRunning == true {
+            stopMicTest()
+        } else {
+            startMicTest()
+        }
+    }
+
+    private func startMicTest() {
+        do {
+            let audioSession = AVAudioSession.sharedInstance()
+            try audioSession.setCategory(.playAndRecord, mode: .spokenAudio, options: [.defaultToSpeaker, .allowBluetoothA2DP])
+            try audioSession.setActive(true)
+
+            // Boost input gain if possible
+            if audioSession.isInputGainSettable {
+                try? audioSession.setInputGain(1.0)
+            }
+
+            audioEngine = AVAudioEngine()
+            guard let audioEngine = audioEngine else { return }
+
+            let inputNode = audioEngine.inputNode
+            let format = inputNode.outputFormat(forBus: 0)
+
+            inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak self] buffer, _ in
+                guard let self = self else { return }
+                let level = self.calculateLevel(buffer: buffer)
+                DispatchQueue.main.async {
+                    self.updateMicLevel(level)
+                }
+            }
+
+            audioEngine.prepare()
+            try audioEngine.start()
+
+            micTestButton.setTitle("Stop Mic Test", for: .normal)
+            micTestButton.backgroundColor = AppMode.claudeOrange
+            micStatusLabel.text = "Speak now..."
+
+        } catch {
+            print("[MicTest] Error: \(error)")
+            micStatusLabel.text = "Error starting mic test"
+        }
+    }
+
+    private func stopMicTest() {
+        micLevelTimer?.invalidate()
+        micLevelTimer = nil
+
+        if let engine = audioEngine, engine.isRunning {
+            engine.inputNode.removeTap(onBus: 0)
+            engine.stop()
+        }
+        audioEngine = nil
+
+        micTestButton.setTitle("Start Mic Test", for: .normal)
+        micTestButton.backgroundColor = UIColor(white: 0.2, alpha: 1)
+        micStatusLabel.text = "Test complete"
+        micLevelFillWidthConstraint?.constant = 0
+    }
+
+    private func calculateLevel(buffer: AVAudioPCMBuffer) -> Float {
+        guard let channelData = buffer.floatChannelData?[0] else { return 0 }
+        let frameLength = Int(buffer.frameLength)
+
+        var sum: Float = 0
+        for i in 0..<frameLength {
+            sum += abs(channelData[i])
+        }
+        let average = sum / Float(frameLength)
+
+        // Convert to dB and normalize to 0-1 range
+        let db = 20 * log10(max(average, 0.0001))
+        let normalized = (db + 60) / 60  // Assuming -60dB to 0dB range
+        return max(0, min(1, normalized))
+    }
+
+    private func updateMicLevel(_ level: Float) {
+        let maxWidth = micLevelBar.bounds.width - 8
+        let newWidth = CGFloat(level) * maxWidth
+
+        UIView.animate(withDuration: 0.05) {
+            self.micLevelFillWidthConstraint?.constant = newWidth
+            self.micLevelBar.layoutIfNeeded()
+        }
+
+        // Update status based on level
+        if level > 0.5 {
+            micStatusLabel.text = "Great! Clear signal"
+            micLevelFill.backgroundColor = .systemGreen
+        } else if level > 0.2 {
+            micStatusLabel.text = "Good level"
+            micLevelFill.backgroundColor = AppMode.claudeOrange
+        } else if level > 0.05 {
+            micStatusLabel.text = "Try speaking louder"
+            micLevelFill.backgroundColor = .systemYellow
+        } else {
+            micStatusLabel.text = "No sound detected"
+            micLevelFill.backgroundColor = UIColor(white: 0.4, alpha: 1)
         }
     }
 

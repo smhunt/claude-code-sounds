@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10000000000000000000050 /* SimulatedLocation.gpx in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000050; };
 		A10000000000000000000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001; };
 		A10000000000000000000002 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002; };
 		A10000000000000000000003 /* CarPlaySceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003; };
@@ -66,6 +67,7 @@
 		A20000000000000000000033 /* ModePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModePickerView.swift; sourceTree = "<group>"; };
 		A20000000000000000000034 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
 		A20000000000000000000035 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A20000000000000000000050 /* SimulatedLocation.gpx */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = SimulatedLocation.gpx; sourceTree = "<group>"; };
 		A30000000000000000000001 /* Roadie.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Roadie.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -102,12 +104,21 @@
 				A50000000000000000000004 /* Services */,
 				A50000000000000000000005 /* Views */,
 				A50000000000000000000008 /* Models */,
+				A50000000000000000000010 /* Resources */,
 				A50000000000000000000009 /* Base.lproj */,
 				A20000000000000000000035 /* Assets.xcassets */,
 				A20000000000000000000013 /* Info.plist */,
 				A20000000000000000000014 /* Roadie.entitlements */,
 			);
 			path = Roadie;
+			sourceTree = "<group>";
+		};
+		A50000000000000000000010 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000050 /* SimulatedLocation.gpx */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		A50000000000000000000003 /* CarPlay */ = {
@@ -239,6 +250,7 @@
 			files = (
 				A10000000000000000000024 /* LaunchScreen.storyboard in Resources */,
 				A10000000000000000000035 /* Assets.xcassets in Resources */,
+				A10000000000000000000050 /* SimulatedLocation.gpx in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
