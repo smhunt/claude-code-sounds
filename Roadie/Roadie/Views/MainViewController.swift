@@ -101,6 +101,29 @@ class MainViewController: UIViewController {
         return l
     }()
 
+    // Large caption for current AI response (live subtitles)
+    private let captionLabel: UILabel = {
+        let l = UILabel()
+        l.translatesAutoresizingMaskIntoConstraints = false
+        l.font = .systemFont(ofSize: 22, weight: .medium)
+        l.textColor = .white
+        l.textAlignment = .center
+        l.numberOfLines = 3
+        l.adjustsFontSizeToFitWidth = true
+        l.minimumScaleFactor = 0.6
+        l.alpha = 0
+        return l
+    }()
+
+    private let captionBackground: UIView = {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        v.layer.cornerRadius = 12
+        v.alpha = 0
+        return v
+    }()
+
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
@@ -132,6 +155,8 @@ class MainViewController: UIViewController {
         headerView.addSubview(settingsButton)
         view.addSubview(modePicker)
         view.addSubview(conversationView)
+        view.addSubview(captionBackground)
+        view.addSubview(captionLabel)
         view.addSubview(inputContainer)
         inputContainer.addSubview(waveformView)
         inputContainer.addSubview(statusLabel)
@@ -187,7 +212,17 @@ class MainViewController: UIViewController {
 
             hintLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 40),
             hintLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -40),
-            hintLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16)
+            hintLabel.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+
+            // Caption (live subtitles) - centered above input
+            captionBackground.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            captionBackground.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            captionBackground.bottomAnchor.constraint(equalTo: inputContainer.topAnchor, constant: -12),
+
+            captionLabel.topAnchor.constraint(equalTo: captionBackground.topAnchor, constant: 12),
+            captionLabel.leadingAnchor.constraint(equalTo: captionBackground.leadingAnchor, constant: 16),
+            captionLabel.trailingAnchor.constraint(equalTo: captionBackground.trailingAnchor, constant: -16),
+            captionLabel.bottomAnchor.constraint(equalTo: captionBackground.bottomAnchor, constant: -12)
         ])
 
         modePicker.delegate = self
@@ -227,7 +262,7 @@ class MainViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func micTapped() {
-        conversationManager?.toggleListening()
+        conversationManager?.handleMicTap()
     }
 
     @objc private func settingsTapped() {
@@ -257,12 +292,20 @@ class MainViewController: UIViewController {
         case "Listening...":
             waveformView.state = .listening
             micButton.isActive = true
+            hideCaption()
         case "Thinking...":
             waveformView.state = .processing
             micButton.isActive = true
-        case "Speaking...":
+        case let s where s.hasPrefix("Speaking"):
             waveformView.state = .speaking
             micButton.isActive = true
+        case "Stopped", "Done", "Paused":
+            waveformView.state = .idle
+            micButton.isActive = false
+            // Keep caption visible for a moment after stopping
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                self?.hideCaption()
+            }
         default:
             waveformView.state = .idle
             micButton.isActive = false
@@ -293,9 +336,41 @@ class MainViewController: UIViewController {
                 cell.updateContent(messages[lastIndex].content)
             }
             scrollToBottom()
+
+            // Update live caption
+            updateCaption(messages[lastIndex].content)
         } else {
             addMessage(role: "assistant", content: chunk)
         }
+    }
+
+    private var currentCaption = ""
+
+    private func updateCaption(_ text: String) {
+        // Filter out action tags
+        var displayText = text
+        displayText = displayText.replacingOccurrences(of: "\\[\\[NAV:[^\\]]+\\]\\]", with: "", options: .regularExpression)
+        displayText = displayText.replacingOccurrences(of: "\\[\\[MUSIC:[^\\]]+\\]\\]", with: "", options: .regularExpression)
+        displayText = displayText.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        currentCaption = displayText
+        captionLabel.text = displayText
+
+        // Show caption with animation
+        if captionBackground.alpha == 0 {
+            UIView.animate(withDuration: 0.2) {
+                self.captionBackground.alpha = 1
+                self.captionLabel.alpha = 1
+            }
+        }
+    }
+
+    private func hideCaption() {
+        UIView.animate(withDuration: 0.3) {
+            self.captionBackground.alpha = 0
+            self.captionLabel.alpha = 0
+        }
+        currentCaption = ""
     }
 
     private func scrollToBottom() {

@@ -16,6 +16,7 @@ class ConversationManager: NSObject {
     private var currentUserInput = ""
     private var currentResponse = ""
     private var isProcessing = false
+    private(set) var isSpeaking = false
 
     var currentMode: AppMode = .drive {
         didSet {
@@ -98,6 +99,35 @@ class ConversationManager: NSObject {
         if speechRecognition.isListening {
             stopListening()
         } else {
+            startListening()
+        }
+    }
+
+    /// Stop AI speech immediately (user interrupt)
+    func stopSpeaking() {
+        tts.stop()
+        aiProvider.cancel()
+        isSpeaking = false
+        isProcessing = false
+        onStatusChange?("Stopped")
+        hapticFeedback(.medium)
+
+        // Resume listening after a brief pause
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            self?.startListening()
+        }
+    }
+
+    /// Handle mic button tap - context-aware behavior
+    func handleMicTap() {
+        if isSpeaking {
+            // Stop the AI mid-speech
+            stopSpeaking()
+        } else if speechRecognition.isListening {
+            // Stop listening
+            stopListening()
+        } else {
+            // Start listening
             startListening()
         }
     }
@@ -254,11 +284,13 @@ extension ConversationManager: AIProviderDelegate {
 extension ConversationManager: TextToSpeechDelegate {
 
     func didStartSpeaking() {
+        isSpeaking = true
         speechRecognition.stopListening()
-        onStatusChange?("Speaking...")
+        onStatusChange?("Speaking... (tap to stop)")
     }
 
     func didFinishSpeaking() {
+        isSpeaking = false
         if !isProcessing && Config.shared.autoListen {
             startListening()
         }
