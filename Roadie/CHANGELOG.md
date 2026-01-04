@@ -7,7 +7,7 @@ All notable changes to Roadie will be documented in this file.
 ### Added
 - **CarPlay quick-tap suggestions**: Tap suggestion prompts to send directly to AI
 - **Simulated location support**: GPX file included for testing location-aware features in simulator
-- **Shared Xcode scheme**: Location simulation pre-configured (Vancouver downtown)
+- **Shared Xcode scheme**: Location simulation pre-configured (Ilderton, Ontario)
 - **Microphone configuration in onboarding**: New step with live audio level meter and mic testing
 - Real-time visual feedback on mic input levels with color-coded status (green/orange/yellow)
 
