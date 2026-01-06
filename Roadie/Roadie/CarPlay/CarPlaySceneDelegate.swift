@@ -1,6 +1,8 @@
 import CarPlay
 import UIKit
 
+/// CarPlay is PRIMARY when connected - handles audio input via car mic.
+/// Phone becomes secondary (settings/transcript display only).
 class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
 
     var interfaceController: CPInterfaceController?
@@ -15,6 +17,9 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
     func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene, didConnect interfaceController: CPInterfaceController) {
         self.interfaceController = interfaceController
 
+        // CarPlay is now the primary audio source
+        Config.shared.activeAudioSource = .carplay
+
         guard Config.shared.hasValidApiKey else {
             showSetupRequired()
             return
@@ -22,10 +27,18 @@ class CarPlaySceneDelegate: UIResponder, CPTemplateApplicationSceneDelegate {
 
         setupTabBar()
         setupConversationManager()
+
+        // Notify phone to become secondary display
+        NotificationCenter.default.post(name: .carPlayDidConnect, object: nil)
     }
 
     func templateApplicationScene(_ templateApplicationScene: CPTemplateApplicationScene, didDisconnect interfaceController: CPInterfaceController) {
         conversationManager?.stopListening()
+
+        // Phone becomes primary again
+        Config.shared.activeAudioSource = .phone
+        NotificationCenter.default.post(name: .carPlayDidDisconnect, object: nil)
+
         self.interfaceController = nil
     }
 

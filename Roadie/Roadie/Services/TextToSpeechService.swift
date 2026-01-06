@@ -12,10 +12,41 @@ class TextToSpeechService: NSObject {
     private let synthesizer = AVSpeechSynthesizer()
     private var pendingText = ""
     private var isSpeaking = false
+    private var isSamplePlayback = false
 
     override init() {
         super.init()
         synthesizer.delegate = self
+        // Pre-warm the synthesizer for lower latency
+        synthesizer.write(AVSpeechUtterance(string: " ")) { _ in }
+    }
+
+    /// Get the best available voice, falling back through premium -> enhanced -> compact
+    private func getBestVoice(for identifier: String) -> AVSpeechSynthesisVoice? {
+        // Try the exact identifier first
+        if let voice = AVSpeechSynthesisVoice(identifier: identifier) {
+            return voice
+        }
+
+        // Extract the voice name and try alternatives
+        let parts = identifier.split(separator: ".")
+        guard parts.count >= 2 else { return AVSpeechSynthesisVoice(language: "en-US") }
+
+        let voiceName = String(parts.last ?? "Samantha")
+        let language = identifier.contains("en-GB") ? "en-GB" :
+                       identifier.contains("en-AU") ? "en-AU" : "en-US"
+
+        // Try premium, enhanced, compact in order
+        let variants = ["premium", "enhanced", "compact"]
+        for variant in variants {
+            let tryId = "com.apple.voice.\(variant).\(language).\(voiceName)"
+            if let voice = AVSpeechSynthesisVoice(identifier: tryId) {
+                return voice
+            }
+        }
+
+        // Fall back to any voice for the language
+        return AVSpeechSynthesisVoice(language: language)
     }
 
     func speak(_ text: String) {
@@ -24,20 +55,39 @@ class TextToSpeechService: NSObject {
 
         let utterance = AVSpeechUtterance(string: text)
 
-        // Use selected voice or fall back to default
-        if let voice = AVSpeechSynthesisVoice(identifier: Config.shared.selectedVoiceIdentifier) {
-            utterance.voice = voice
-        } else {
-            utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
-        }
+        // Use best available voice
+        utterance.voice = getBestVoice(for: Config.shared.selectedVoiceIdentifier)
 
+        // Optimized for natural speech with low latency
+        utterance.rate = Config.shared.speechRate
+        utterance.pitchMultiplier = 1.0
+        utterance.volume = 1.0
+        utterance.preUtteranceDelay = 0  // No delay before speaking
+        utterance.postUtteranceDelay = 0.05  // Minimal gap between sentences
+
+        synthesizer.speak(utterance)
+    }
+
+    /// Play a voice sample for preview (doesn't trigger delegate callbacks)
+    func playSample(voiceIdentifier: String, text: String) {
+        synthesizer.stopSpeaking(at: .immediate)
+        isSamplePlayback = true
+
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = getBestVoice(for: voiceIdentifier)
         utterance.rate = Config.shared.speechRate
         utterance.pitchMultiplier = 1.0
         utterance.volume = 1.0
         utterance.preUtteranceDelay = 0
-        utterance.postUtteranceDelay = 0.1
+        utterance.postUtteranceDelay = 0
 
         synthesizer.speak(utterance)
+    }
+
+    /// Play the currently selected voice's sample
+    func playCurrentVoiceSample() {
+        let voice = Config.availableVoices[Config.shared.selectedVoiceIndex]
+        playSample(voiceIdentifier: voice.1, text: voice.2)
     }
 
     // Stream text character by character (buffers sentences)
@@ -81,6 +131,9 @@ class TextToSpeechService: NSObject {
 extension TextToSpeechService: AVSpeechSynthesizerDelegate {
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
+        // Don't notify delegate for sample playback
+        guard !isSamplePlayback else { return }
+
         if !isSpeaking {
             isSpeaking = true
             delegate?.didStartSpeaking()
@@ -88,6 +141,11 @@ extension TextToSpeechService: AVSpeechSynthesizerDelegate {
     }
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        if isSamplePlayback {
+            isSamplePlayback = false
+            return
+        }
+
         if !synthesizer.isSpeaking {
             isSpeaking = false
             delegate?.didFinishSpeaking()
@@ -95,6 +153,7 @@ extension TextToSpeechService: AVSpeechSynthesizerDelegate {
     }
 
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+        isSamplePlayback = false
         isSpeaking = false
         delegate?.didFinishSpeaking()
     }

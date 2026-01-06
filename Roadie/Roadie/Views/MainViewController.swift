@@ -7,6 +7,7 @@ class MainViewController: UIViewController {
     private var currentMode: AppMode = .drive
     private var conversationManager: ConversationManager?
     private var messages: [(role: String, content: String)] = []
+    private var isCarPlayActive = false
 
     // MARK: - UI Elements
 
@@ -131,6 +132,48 @@ class MainViewController: UIViewController {
         setupUI()
         setupTableView()
         setupActions()
+        setupCarPlayObservers()
+    }
+
+    private func setupCarPlayObservers() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(carPlayDidConnect),
+            name: .carPlayDidConnect,
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(carPlayDidDisconnect),
+            name: .carPlayDidDisconnect,
+            object: nil
+        )
+    }
+
+    @objc private func carPlayDidConnect() {
+        isCarPlayActive = true
+        // Stop phone mic - CarPlay is now primary
+        conversationManager?.stopListening()
+        updateUIForCarPlayMode(active: true)
+    }
+
+    @objc private func carPlayDidDisconnect() {
+        isCarPlayActive = false
+        updateUIForCarPlayMode(active: false)
+    }
+
+    private func updateUIForCarPlayMode(active: Bool) {
+        if active {
+            statusLabel.text = "CarPlay Active"
+            micButton.isEnabled = false
+            micButton.alpha = 0.5
+            hintLabel.text = "Use CarPlay screen to interact"
+        } else {
+            statusLabel.text = "Tap to speak"
+            micButton.isEnabled = true
+            micButton.alpha = 1.0
+            updateHint()
+        }
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -262,6 +305,8 @@ class MainViewController: UIViewController {
     // MARK: - Actions
 
     @objc private func micTapped() {
+        // Phone mic disabled when CarPlay is active
+        guard !isCarPlayActive else { return }
         conversationManager?.handleMicTap()
     }
 

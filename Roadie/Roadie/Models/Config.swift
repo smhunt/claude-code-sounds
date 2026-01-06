@@ -125,20 +125,48 @@ class Config {
         set { UserDefaults.standard.set(newValue, forKey: "selected_voice_index") }
     }
 
-    // Available voices for TTS
-    static let availableVoices: [(name: String, identifier: String)] = [
-        ("Samantha", "com.apple.voice.compact.en-US.Samantha"),
-        ("Daniel", "com.apple.voice.compact.en-GB.Daniel"),
-        ("Karen", "com.apple.voice.compact.en-AU.Karen"),
-        ("Moira", "com.apple.voice.compact.en-IE.Moira")
+    // Available voices for TTS - Premium/Enhanced voices for naturalness
+    static let availableVoices: [(name: String, identifier: String, sampleText: String)] = [
+        ("Zoe (Premium)", "com.apple.voice.premium.en-US.Zoe", "Hey there! I'm Zoe, ready to help you on the road."),
+        ("Ava (Premium)", "com.apple.voice.premium.en-US.Ava", "Hi! I'm Ava, your AI driving companion."),
+        ("Samantha (Enhanced)", "com.apple.voice.enhanced.en-US.Samantha", "Hello! I'm Samantha, here to assist you."),
+        ("Tom (Premium)", "com.apple.voice.premium.en-US.Tom", "Hey! I'm Tom, let's hit the road."),
+        ("Evan (Premium)", "com.apple.voice.premium.en-US.Evan", "Hi there! I'm Evan, ready when you are."),
+        ("Daniel (UK)", "com.apple.voice.enhanced.en-GB.Daniel", "Hello! I'm Daniel, at your service."),
+        ("Karen (AU)", "com.apple.voice.enhanced.en-AU.Karen", "G'day! I'm Karen, happy to help."),
+        ("Samantha (Compact)", "com.apple.voice.compact.en-US.Samantha", "Hi! I'm Samantha.")
     ]
+
+    // Audio input source - phone or CarPlay, never both
+    var activeAudioSource: AudioSource {
+        get {
+            let raw = UserDefaults.standard.string(forKey: "active_audio_source") ?? "phone"
+            return AudioSource(rawValue: raw) ?? .phone
+        }
+        set {
+            UserDefaults.standard.set(newValue.rawValue, forKey: "active_audio_source")
+        }
+    }
+
+    enum AudioSource: String {
+        case phone
+        case carplay
+    }
 
     var selectedVoiceIdentifier: String {
         let index = selectedVoiceIndex
         if index >= 0 && index < Config.availableVoices.count {
-            return Config.availableVoices[index].identifier
+            return Config.availableVoices[index].1
         }
-        return Config.availableVoices[0].identifier
+        return Config.availableVoices[0].1
+    }
+
+    var selectedVoiceSampleText: String {
+        let index = selectedVoiceIndex
+        if index >= 0 && index < Config.availableVoices.count {
+            return Config.availableVoices[index].2
+        }
+        return Config.availableVoices[0].2
     }
 
     // MARK: - Onboarding

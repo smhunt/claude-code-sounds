@@ -2,6 +2,25 @@
 
 All notable changes to Roadie will be documented in this file.
 
+## [0.5.0] - 2025-01-05
+
+### Added
+- **Premium TTS voices**: Added Zoe, Ava, Tom, Evan premium voices for more natural speech
+- **Voice preview samples**: Each voice has a sample phrase for auditioning
+- **Smart voice fallback**: Automatically falls back through premium -> enhanced -> compact voices
+
+### Changed
+- **Single audio source**: Only phone OR CarPlay mic active at once, never both
+- **CarPlay is primary**: When CarPlay connects, it handles all audio input; phone becomes secondary display
+- **Phone becomes display-only**: When CarPlay is active, phone shows "CarPlay Active" and disables its mic
+- **Lower latency TTS**: Reduced utterance delays and pre-warmed synthesizer for faster response
+
+### Fixed
+- Eliminated dual-mic audio conflicts between phone and car
+- Phone mic no longer competes with CarPlay audio routing
+
+---
+
 ## [0.4.0] - 2025-01-04
 
 ### Added

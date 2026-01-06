@@ -58,3 +58,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return config
     }
 }
+
+// MARK: - Notification Names for Audio Routing
+
+extension Notification.Name {
+    /// Posted when CarPlay connects - phone becomes secondary display
+    static let carPlayDidConnect = Notification.Name("carPlayDidConnect")
+
+    /// Posted when CarPlay disconnects - phone becomes primary again
+    static let carPlayDidDisconnect = Notification.Name("carPlayDidDisconnect")
+
+    /// Posted when conversation status changes (for display sync)
+    static let conversationStatusDidChange = Notification.Name("conversationStatusDidChange")
+
+    /// Posted when AI response updates (for display sync)
+    static let conversationResponseDidUpdate = Notification.Name("conversationResponseDidUpdate")
+}
