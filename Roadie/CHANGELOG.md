@@ -2,6 +2,15 @@
 
 All notable changes to Roadie will be documented in this file.
 
+## [0.5.1] - 2025-01-06
+
+### Added
+- **Voice selection in onboarding**: New page to preview and select AI voice during setup
+- Scrollable voice list with play buttons for each voice sample
+- Checkmark indicator shows currently selected voice
+
+---
+
 ## [0.5.0] - 2025-01-05
 
 ### Added

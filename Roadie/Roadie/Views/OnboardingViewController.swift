@@ -11,11 +11,15 @@ class OnboardingViewController: UIViewController {
     weak var delegate: OnboardingDelegate?
 
     private var currentPage = 0
-    private let pages = ["welcome", "permissions", "micconfig", "apikey", "ready"]
+    private let pages = ["welcome", "permissions", "micconfig", "voiceselect", "apikey", "ready"]
 
     // Mic testing
     private var audioEngine: AVAudioEngine?
     private var micLevelTimer: Timer?
+
+    // Voice selection
+    private let tts = TextToSpeechService()
+    private var voiceButtons: [UIButton] = []
 
     // MARK: - UI Elements
 
@@ -94,7 +98,7 @@ class OnboardingViewController: UIViewController {
     private let pageControl: UIPageControl = {
         let p = UIPageControl()
         p.translatesAutoresizingMaskIntoConstraints = false
-        p.numberOfPages = 5
+        p.numberOfPages = 6
         p.currentPageIndicatorTintColor = AppMode.claudeOrange
         p.pageIndicatorTintColor = UIColor(white: 0.3, alpha: 1)
         return p
@@ -157,6 +161,29 @@ class OnboardingViewController: UIViewController {
         return b
     }()
 
+    // Voice selection UI
+    private let voiceSelectContainer: UIView = {
+        let v = UIView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.isHidden = true
+        return v
+    }()
+
+    private let voiceScrollView: UIScrollView = {
+        let sv = UIScrollView()
+        sv.translatesAutoresizingMaskIntoConstraints = false
+        sv.showsVerticalScrollIndicator = true
+        return sv
+    }()
+
+    private let voiceStackView: UIStackView = {
+        let sv = UIStackView()
+        sv.translatesAutoresizingMaskIntoConstraints = false
+        sv.axis = .vertical
+        sv.spacing = 8
+        return sv
+    }()
+
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
@@ -176,6 +203,7 @@ class OnboardingViewController: UIViewController {
         view.addSubview(modePreviewStack)
         view.addSubview(apiKeyField)
         view.addSubview(micConfigContainer)
+        view.addSubview(voiceSelectContainer)
         view.addSubview(primaryButton)
         view.addSubview(pageControl)
 
@@ -192,6 +220,11 @@ class OnboardingViewController: UIViewController {
         micConfigContainer.addSubview(micTestButton)
 
         micLevelFillWidthConstraint = micLevelFill.widthAnchor.constraint(equalToConstant: 0)
+
+        // Setup voice selection container
+        voiceSelectContainer.addSubview(voiceScrollView)
+        voiceScrollView.addSubview(voiceStackView)
+        setupVoicePicker()
 
         NSLayoutConstraint.activate([
             backgroundView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -246,6 +279,23 @@ class OnboardingViewController: UIViewController {
             micTestButton.centerXAnchor.constraint(equalTo: micConfigContainer.centerXAnchor),
             micTestButton.widthAnchor.constraint(equalToConstant: 140),
             micTestButton.heightAnchor.constraint(equalToConstant: 36),
+
+            // Voice selection container
+            voiceSelectContainer.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 24),
+            voiceSelectContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
+            voiceSelectContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
+            voiceSelectContainer.bottomAnchor.constraint(equalTo: primaryButton.topAnchor, constant: -24),
+
+            voiceScrollView.topAnchor.constraint(equalTo: voiceSelectContainer.topAnchor),
+            voiceScrollView.leadingAnchor.constraint(equalTo: voiceSelectContainer.leadingAnchor),
+            voiceScrollView.trailingAnchor.constraint(equalTo: voiceSelectContainer.trailingAnchor),
+            voiceScrollView.bottomAnchor.constraint(equalTo: voiceSelectContainer.bottomAnchor),
+
+            voiceStackView.topAnchor.constraint(equalTo: voiceScrollView.topAnchor),
+            voiceStackView.leadingAnchor.constraint(equalTo: voiceScrollView.leadingAnchor),
+            voiceStackView.trailingAnchor.constraint(equalTo: voiceScrollView.trailingAnchor),
+            voiceStackView.bottomAnchor.constraint(equalTo: voiceScrollView.bottomAnchor),
+            voiceStackView.widthAnchor.constraint(equalTo: voiceScrollView.widthAnchor),
 
             primaryButton.bottomAnchor.constraint(equalTo: pageControl.topAnchor, constant: -32),
             primaryButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
@@ -322,10 +372,16 @@ class OnboardingViewController: UIViewController {
         apiKeyField.isHidden = true
         modePreviewStack.isHidden = true
         micConfigContainer.isHidden = true
+        voiceSelectContainer.isHidden = true
 
         // Stop mic test when leaving that page
         if pages[page] != "micconfig" {
             stopMicTest()
+        }
+
+        // Stop voice sample when leaving that page
+        if pages[page] != "voiceselect" {
+            tts.stop()
         }
 
         switch pages[page] {
@@ -349,6 +405,14 @@ class OnboardingViewController: UIViewController {
             primaryButton.setTitle("Continue", for: .normal)
             micConfigContainer.isHidden = false
             micStatusLabel.text = "Tap 'Start Mic Test' to begin"
+
+        case "voiceselect":
+            iconLabel.text = "🗣️"
+            titleLabel.text = "Choose a Voice"
+            subtitleLabel.text = "Pick the voice that sounds best to you."
+            primaryButton.setTitle("Continue", for: .normal)
+            voiceSelectContainer.isHidden = false
+            updateVoiceSelection()
 
         case "apikey":
             iconLabel.text = "🔑"
@@ -384,7 +448,11 @@ class OnboardingViewController: UIViewController {
 
         case "micconfig":
             stopMicTest()
-            updateForPage(3)
+            updateForPage(3)  // Go to voiceselect
+
+        case "voiceselect":
+            tts.stop()
+            updateForPage(4)  // Go to apikey
 
         case "apikey":
             guard let key = apiKeyField.text, !key.isEmpty else {
@@ -393,7 +461,7 @@ class OnboardingViewController: UIViewController {
             }
             Config.shared.apiKey = key
             if Config.shared.hasValidApiKey {
-                updateForPage(4)
+                updateForPage(5)  // Go to ready
             } else {
                 shakeField()
             }
@@ -546,5 +614,109 @@ class OnboardingViewController: UIViewController {
         group.notify(queue: .main) {
             completion()
         }
+    }
+
+    // MARK: - Voice Selection
+
+    private func setupVoicePicker() {
+        voiceButtons.removeAll()
+
+        for (index, voice) in Config.availableVoices.enumerated() {
+            let row = createVoiceRow(name: voice.name, index: index)
+            voiceStackView.addArrangedSubview(row)
+        }
+    }
+
+    private func createVoiceRow(name: String, index: Int) -> UIView {
+        let container = UIView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+        container.backgroundColor = UIColor(white: 0.12, alpha: 1)
+        container.layer.cornerRadius = 10
+
+        // Checkmark
+        let checkmark = UIImageView()
+        checkmark.translatesAutoresizingMaskIntoConstraints = false
+        checkmark.image = UIImage(systemName: "checkmark.circle.fill")
+        checkmark.tintColor = AppMode.claudeOrange
+        checkmark.contentMode = .scaleAspectFit
+        checkmark.tag = 100 + index  // Tag for finding later
+
+        // Voice name button (tapping selects AND plays)
+        let nameButton = UIButton(type: .system)
+        nameButton.translatesAutoresizingMaskIntoConstraints = false
+        nameButton.setTitle(name, for: .normal)
+        nameButton.setTitleColor(.white, for: .normal)
+        nameButton.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+        nameButton.contentHorizontalAlignment = .left
+        nameButton.tag = index
+        nameButton.addTarget(self, action: #selector(voiceSelected(_:)), for: .touchUpInside)
+        voiceButtons.append(nameButton)
+
+        // Play button
+        let playButton = UIButton(type: .system)
+        playButton.translatesAutoresizingMaskIntoConstraints = false
+        playButton.setImage(UIImage(systemName: "play.circle.fill"), for: .normal)
+        playButton.tintColor = AppMode.claudeOrange
+        playButton.tag = index
+        playButton.addTarget(self, action: #selector(playVoiceSample(_:)), for: .touchUpInside)
+
+        container.addSubview(checkmark)
+        container.addSubview(nameButton)
+        container.addSubview(playButton)
+
+        NSLayoutConstraint.activate([
+            container.heightAnchor.constraint(equalToConstant: 52),
+
+            checkmark.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 12),
+            checkmark.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            checkmark.widthAnchor.constraint(equalToConstant: 24),
+            checkmark.heightAnchor.constraint(equalToConstant: 24),
+
+            nameButton.leadingAnchor.constraint(equalTo: checkmark.trailingAnchor, constant: 12),
+            nameButton.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            nameButton.trailingAnchor.constraint(equalTo: playButton.leadingAnchor, constant: -12),
+
+            playButton.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -12),
+            playButton.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+            playButton.widthAnchor.constraint(equalToConstant: 32),
+            playButton.heightAnchor.constraint(equalToConstant: 32)
+        ])
+
+        return container
+    }
+
+    private func updateVoiceSelection() {
+        let selected = Config.shared.selectedVoiceIndex
+
+        for (index, _) in Config.availableVoices.enumerated() {
+            // Find checkmark by tag
+            if let row = voiceStackView.arrangedSubviews[safe: index],
+               let checkmark = row.viewWithTag(100 + index) as? UIImageView {
+                checkmark.alpha = index == selected ? 1.0 : 0.0
+            }
+        }
+    }
+
+    @objc private func voiceSelected(_ sender: UIButton) {
+        let index = sender.tag
+        Config.shared.selectedVoiceIndex = index
+        updateVoiceSelection()
+        playVoiceSample(sender)
+    }
+
+    @objc private func playVoiceSample(_ sender: UIButton) {
+        let index = sender.tag
+        guard index < Config.availableVoices.count else { return }
+
+        let voice = Config.availableVoices[index]
+        tts.playSample(voiceIdentifier: voice.identifier, text: voice.sampleText)
+    }
+}
+
+// MARK: - Safe Array Access
+
+private extension Array {
+    subscript(safe index: Int) -> Element? {
+        return indices.contains(index) ? self[index] : nil
     }
 }
