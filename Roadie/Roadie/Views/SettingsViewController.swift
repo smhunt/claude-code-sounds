@@ -15,6 +15,9 @@ class SettingsViewController: UIViewController {
     private let claudeDark = UIColor(red: 0.08, green: 0.08, blue: 0.08, alpha: 1.0)
     private let cardBackground = UIColor(red: 0.12, green: 0.12, blue: 0.12, alpha: 1.0)
 
+    // TTS for voice samples
+    private let tts = TextToSpeechService()
+
     // MARK: - UI
 
     private let scrollView: UIScrollView = {
@@ -76,15 +79,14 @@ class SettingsViewController: UIViewController {
         return s
     }()
 
-    private lazy var voicePicker: UISegmentedControl = {
-        let items = ["Samantha", "Daniel", "Karen", "Moira"]
-        let seg = UISegmentedControl(items: items)
-        seg.selectedSegmentIndex = Config.shared.selectedVoiceIndex
-        seg.selectedSegmentTintColor = claudeOrange
-        seg.setTitleTextAttributes([.foregroundColor: UIColor.white], for: .normal)
-        seg.setTitleTextAttributes([.foregroundColor: UIColor.black], for: .selected)
-        return seg
+    private lazy var voicePickerStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 8
+        return stack
     }()
+
+    private var voiceButtons: [UIButton] = []
 
     private lazy var providerPicker: UISegmentedControl = {
         let items = AIProviderType.allCases.map { $0.displayName }
@@ -201,11 +203,12 @@ class SettingsViewController: UIViewController {
         stackView.addArrangedSubview(createSpacer(24))
 
         // Voice Section
+        setupVoicePicker()
         stackView.addArrangedSubview(createSectionCard(title: "Voice", items: [
             voiceToggle,
             autoListenToggle,
             createLabeledRow(title: "Speech Rate", control: speechRateSlider),
-            createLabeledRow(title: "Voice", control: voicePicker)
+            createLabeledRow(title: "Select Voice (tap to preview)", control: voicePickerStack)
         ]))
 
         stackView.addArrangedSubview(createSpacer(16))
@@ -255,6 +258,99 @@ class SettingsViewController: UIViewController {
         view.endEditing(true)
     }
 
+    private func setupVoicePicker() {
+        voiceButtons.removeAll()
+        voicePickerStack.arrangedSubviews.forEach { $0.removeFromSuperview() }
+
+        for (index, voice) in Config.availableVoices.enumerated() {
+            let row = createVoiceRow(name: voice.0, index: index)
+            voicePickerStack.addArrangedSubview(row)
+        }
+
+        updateVoiceSelection()
+    }
+
+    private func createVoiceRow(name: String, index: Int) -> UIView {
+        let row = UIView()
+        row.heightAnchor.constraint(equalToConstant: 44).isActive = true
+
+        // Voice name button (selects and plays sample)
+        let nameButton = UIButton(type: .system)
+        nameButton.translatesAutoresizingMaskIntoConstraints = false
+        nameButton.setTitle(name, for: .normal)
+        nameButton.titleLabel?.font = .systemFont(ofSize: 15, weight: .medium)
+        nameButton.contentHorizontalAlignment = .left
+        nameButton.tag = index
+        nameButton.addTarget(self, action: #selector(voiceSelected(_:)), for: .touchUpInside)
+        voiceButtons.append(nameButton)
+
+        // Play button
+        let playButton = UIButton(type: .system)
+        playButton.translatesAutoresizingMaskIntoConstraints = false
+        playButton.setImage(UIImage(systemName: "play.circle.fill"), for: .normal)
+        playButton.tintColor = claudeOrange
+        playButton.tag = index
+        playButton.addTarget(self, action: #selector(playVoiceSample(_:)), for: .touchUpInside)
+
+        // Checkmark for selected
+        let checkmark = UIImageView(image: UIImage(systemName: "checkmark.circle.fill"))
+        checkmark.translatesAutoresizingMaskIntoConstraints = false
+        checkmark.tintColor = claudeOrange
+        checkmark.tag = 1000 + index  // Unique tag for checkmarks
+        checkmark.isHidden = true
+
+        row.addSubview(checkmark)
+        row.addSubview(nameButton)
+        row.addSubview(playButton)
+
+        NSLayoutConstraint.activate([
+            checkmark.leadingAnchor.constraint(equalTo: row.leadingAnchor),
+            checkmark.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            checkmark.widthAnchor.constraint(equalToConstant: 22),
+            checkmark.heightAnchor.constraint(equalToConstant: 22),
+
+            nameButton.leadingAnchor.constraint(equalTo: checkmark.trailingAnchor, constant: 10),
+            nameButton.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            nameButton.trailingAnchor.constraint(equalTo: playButton.leadingAnchor, constant: -8),
+
+            playButton.trailingAnchor.constraint(equalTo: row.trailingAnchor),
+            playButton.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            playButton.widthAnchor.constraint(equalToConstant: 36),
+            playButton.heightAnchor.constraint(equalToConstant: 36)
+        ])
+
+        return row
+    }
+
+    @objc private func voiceSelected(_ sender: UIButton) {
+        Config.shared.selectedVoiceIndex = sender.tag
+        updateVoiceSelection()
+        playVoiceSample(sender)
+    }
+
+    @objc private func playVoiceSample(_ sender: UIButton) {
+        let index = sender.tag
+        guard index < Config.availableVoices.count else { return }
+
+        let voice = Config.availableVoices[index]
+        tts.playSample(voiceIdentifier: voice.1, text: voice.2)
+    }
+
+    private func updateVoiceSelection() {
+        let selectedIndex = Config.shared.selectedVoiceIndex
+
+        for (index, button) in voiceButtons.enumerated() {
+            let isSelected = index == selectedIndex
+            button.setTitleColor(isSelected ? claudeOrange : .white, for: .normal)
+
+            // Update checkmark visibility
+            if let row = button.superview,
+               let checkmark = row.viewWithTag(1000 + index) as? UIImageView {
+                checkmark.isHidden = !isSelected
+            }
+        }
+    }
+
     private func loadValues() {
         // Load provider selection
         let currentProvider = Config.shared.selectedProvider
@@ -267,8 +363,8 @@ class SettingsViewController: UIViewController {
         findSwitch(in: autoListenToggle)?.isOn = Config.shared.autoListen
         findSwitch(in: hapticToggle)?.isOn = Config.shared.hapticFeedback
         speechRateSlider.value = Config.shared.speechRate
-        voicePicker.selectedSegmentIndex = Config.shared.selectedVoiceIndex
 
+        updateVoiceSelection()
         updateProviderStatus()
     }
 
@@ -295,7 +391,7 @@ class SettingsViewController: UIViewController {
         Config.shared.autoListen = findSwitch(in: autoListenToggle)?.isOn ?? true
         Config.shared.hapticFeedback = findSwitch(in: hapticToggle)?.isOn ?? true
         Config.shared.speechRate = speechRateSlider.value
-        Config.shared.selectedVoiceIndex = voicePicker.selectedSegmentIndex
+        // Voice index is already saved when selecting
 
         delegate?.didUpdateSettings()
         dismiss(animated: true)
