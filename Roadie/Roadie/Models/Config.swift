@@ -126,34 +126,63 @@ class Config {
         set { UserDefaults.standard.set(newValue, forKey: "selected_voice_index") }
     }
 
+    // Preferred voices in order (best first) - these sound most natural
+    private static let preferredVoices = ["Samantha", "Karen", "Daniel", "Moira", "Tessa"]
+
     // Discover available English voices at runtime
     static var availableVoices: [(name: String, identifier: String, sampleText: String)] = {
         let allVoices = AVSpeechSynthesisVoice.speechVoices()
 
-        // Filter for English voices and sort by quality
-        let englishVoices = allVoices
-            .filter { $0.language.hasPrefix("en") }
-            .sorted { v1, v2 in
-                // Sort by quality (higher is better), then by name
-                if v1.quality.rawValue != v2.quality.rawValue {
-                    return v1.quality.rawValue > v2.quality.rawValue
-                }
-                return v1.name < v2.name
-            }
+        // Filter for English voices
+        let englishVoices = allVoices.filter { $0.language.hasPrefix("en") }
 
-        // Take top voices, avoiding duplicates by name
-        var seen = Set<String>()
+        // Find best version of each preferred voice first
         var result: [(String, String, String)] = []
+        var seen = Set<String>()
 
-        for voice in englishVoices {
+        // Add preferred voices first (in order), picking highest quality version
+        for preferredName in preferredVoices {
+            let matches = englishVoices
+                .filter { $0.name.contains(preferredName) }
+                .sorted { $0.quality.rawValue > $1.quality.rawValue }
+
+            if let best = matches.first {
+                seen.insert(preferredName)
+
+                let qualityLabel: String
+                switch best.quality {
+                case .premium: qualityLabel = "Premium"
+                case .enhanced: qualityLabel = "Enhanced"
+                default: qualityLabel = "Standard"
+                }
+
+                let region = best.language.contains("GB") ? "UK" :
+                            best.language.contains("AU") ? "AU" :
+                            best.language.contains("IE") ? "IE" : "US"
+
+                // First voice gets "Recommended" label
+                let displayName = result.isEmpty
+                    ? "\(best.name) (\(region)) - Recommended"
+                    : "\(best.name) (\(region), \(qualityLabel))"
+
+                let sampleText = "Hi! I'm \(best.name). I'll be your AI driving companion."
+                result.append((displayName, best.identifier, sampleText))
+            }
+        }
+
+        // Add other voices sorted by quality
+        let otherVoices = englishVoices
+            .filter { voice in !preferredVoices.contains { voice.name.contains($0) } }
+            .sorted { $0.quality.rawValue > $1.quality.rawValue }
+
+        for voice in otherVoices {
+            guard result.count < 8 else { break }
+
             let baseName = voice.name.replacingOccurrences(of: " (Enhanced)", with: "")
                                      .replacingOccurrences(of: " (Premium)", with: "")
-
-            // Skip if we already have this voice name
             guard !seen.contains(baseName) else { continue }
             seen.insert(baseName)
 
-            // Determine quality label
             let qualityLabel: String
             switch voice.quality {
             case .premium: qualityLabel = "Premium"
@@ -161,20 +190,13 @@ class Config {
             default: qualityLabel = "Standard"
             }
 
-            // Get language region
             let region = voice.language.contains("GB") ? "UK" :
                         voice.language.contains("AU") ? "AU" :
-                        voice.language.contains("IE") ? "IE" :
-                        voice.language.contains("ZA") ? "ZA" :
-                        voice.language.contains("IN") ? "IN" : "US"
+                        voice.language.contains("IE") ? "IE" : "US"
 
             let displayName = "\(voice.name) (\(region), \(qualityLabel))"
             let sampleText = "Hi! I'm \(voice.name). I'll be your AI driving companion."
-
             result.append((displayName, voice.identifier, sampleText))
-
-            // Limit to 12 voices max
-            if result.count >= 12 { break }
         }
 
         // Fallback if no voices found

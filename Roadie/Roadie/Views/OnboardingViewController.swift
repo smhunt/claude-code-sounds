@@ -98,9 +98,12 @@ class OnboardingViewController: UIViewController {
     private let backButton: UIButton = {
         let b = UIButton(type: .system)
         b.translatesAutoresizingMaskIntoConstraints = false
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
-        b.setTitleColor(UIColor(white: 0.6, alpha: 1), for: .normal)
-        b.setTitle("Back", for: .normal)
+        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
+        b.setTitleColor(.white, for: .normal)
+        b.setTitle("< Back", for: .normal)
+        b.backgroundColor = UIColor(white: 0.2, alpha: 1)
+        b.layer.cornerRadius = 10
+        b.contentEdgeInsets = UIEdgeInsets(top: 8, left: 20, bottom: 8, right: 20)
         b.isHidden = true
         return b
     }()
