@@ -21,32 +21,14 @@ class TextToSpeechService: NSObject {
         synthesizer.write(AVSpeechUtterance(string: " ")) { _ in }
     }
 
-    /// Get the best available voice, falling back through premium -> enhanced -> compact
-    private func getBestVoice(for identifier: String) -> AVSpeechSynthesisVoice? {
-        // Try the exact identifier first
-        if let voice = AVSpeechSynthesisVoice(identifier: identifier) {
+    /// Get voice by identifier, with fallback to default
+    private func getVoice(for identifier: String) -> AVSpeechSynthesisVoice? {
+        // Use exact identifier if provided
+        if !identifier.isEmpty, let voice = AVSpeechSynthesisVoice(identifier: identifier) {
             return voice
         }
-
-        // Extract the voice name and try alternatives
-        let parts = identifier.split(separator: ".")
-        guard parts.count >= 2 else { return AVSpeechSynthesisVoice(language: "en-US") }
-
-        let voiceName = String(parts.last ?? "Samantha")
-        let language = identifier.contains("en-GB") ? "en-GB" :
-                       identifier.contains("en-AU") ? "en-AU" : "en-US"
-
-        // Try premium, enhanced, compact in order
-        let variants = ["premium", "enhanced", "compact"]
-        for variant in variants {
-            let tryId = "com.apple.voice.\(variant).\(language).\(voiceName)"
-            if let voice = AVSpeechSynthesisVoice(identifier: tryId) {
-                return voice
-            }
-        }
-
-        // Fall back to any voice for the language
-        return AVSpeechSynthesisVoice(language: language)
+        // Fallback to default English voice
+        return AVSpeechSynthesisVoice(language: "en-US")
     }
 
     func speak(_ text: String) {
@@ -55,8 +37,8 @@ class TextToSpeechService: NSObject {
 
         let utterance = AVSpeechUtterance(string: text)
 
-        // Use best available voice
-        utterance.voice = getBestVoice(for: Config.shared.selectedVoiceIdentifier)
+        // Use selected voice
+        utterance.voice = getVoice(for: Config.shared.selectedVoiceIdentifier)
 
         // Optimized for natural speech with low latency
         utterance.rate = Config.shared.speechRate
@@ -74,7 +56,7 @@ class TextToSpeechService: NSObject {
         isSamplePlayback = true
 
         let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = getBestVoice(for: voiceIdentifier)
+        utterance.voice = getVoice(for: voiceIdentifier)
         utterance.rate = Config.shared.speechRate
         utterance.pitchMultiplier = 1.0
         utterance.volume = 1.0

@@ -1,5 +1,6 @@
 import Foundation
 import Security
+import AVFoundation
 
 // MARK: - Secure Configuration Storage
 
@@ -125,17 +126,64 @@ class Config {
         set { UserDefaults.standard.set(newValue, forKey: "selected_voice_index") }
     }
 
-    // Available voices for TTS - Premium/Enhanced voices for naturalness
-    static let availableVoices: [(name: String, identifier: String, sampleText: String)] = [
-        ("Zoe (Premium)", "com.apple.voice.premium.en-US.Zoe", "Hey there! I'm Zoe, ready to help you on the road."),
-        ("Ava (Premium)", "com.apple.voice.premium.en-US.Ava", "Hi! I'm Ava, your AI driving companion."),
-        ("Samantha (Enhanced)", "com.apple.voice.enhanced.en-US.Samantha", "Hello! I'm Samantha, here to assist you."),
-        ("Tom (Premium)", "com.apple.voice.premium.en-US.Tom", "Hey! I'm Tom, let's hit the road."),
-        ("Evan (Premium)", "com.apple.voice.premium.en-US.Evan", "Hi there! I'm Evan, ready when you are."),
-        ("Daniel (UK)", "com.apple.voice.enhanced.en-GB.Daniel", "Hello! I'm Daniel, at your service."),
-        ("Karen (AU)", "com.apple.voice.enhanced.en-AU.Karen", "G'day! I'm Karen, happy to help."),
-        ("Samantha (Compact)", "com.apple.voice.compact.en-US.Samantha", "Hi! I'm Samantha.")
-    ]
+    // Discover available English voices at runtime
+    static var availableVoices: [(name: String, identifier: String, sampleText: String)] = {
+        let allVoices = AVSpeechSynthesisVoice.speechVoices()
+
+        // Filter for English voices and sort by quality
+        let englishVoices = allVoices
+            .filter { $0.language.hasPrefix("en") }
+            .sorted { v1, v2 in
+                // Sort by quality (higher is better), then by name
+                if v1.quality.rawValue != v2.quality.rawValue {
+                    return v1.quality.rawValue > v2.quality.rawValue
+                }
+                return v1.name < v2.name
+            }
+
+        // Take top voices, avoiding duplicates by name
+        var seen = Set<String>()
+        var result: [(String, String, String)] = []
+
+        for voice in englishVoices {
+            let baseName = voice.name.replacingOccurrences(of: " (Enhanced)", with: "")
+                                     .replacingOccurrences(of: " (Premium)", with: "")
+
+            // Skip if we already have this voice name
+            guard !seen.contains(baseName) else { continue }
+            seen.insert(baseName)
+
+            // Determine quality label
+            let qualityLabel: String
+            switch voice.quality {
+            case .premium: qualityLabel = "Premium"
+            case .enhanced: qualityLabel = "Enhanced"
+            default: qualityLabel = "Standard"
+            }
+
+            // Get language region
+            let region = voice.language.contains("GB") ? "UK" :
+                        voice.language.contains("AU") ? "AU" :
+                        voice.language.contains("IE") ? "IE" :
+                        voice.language.contains("ZA") ? "ZA" :
+                        voice.language.contains("IN") ? "IN" : "US"
+
+            let displayName = "\(voice.name) (\(region), \(qualityLabel))"
+            let sampleText = "Hi! I'm \(voice.name). I'll be your AI driving companion."
+
+            result.append((displayName, voice.identifier, sampleText))
+
+            // Limit to 12 voices max
+            if result.count >= 12 { break }
+        }
+
+        // Fallback if no voices found
+        if result.isEmpty {
+            result.append(("Default Voice", "", "Hello, I'm your AI assistant."))
+        }
+
+        return result
+    }()
 
     // Audio input source - phone or CarPlay, never both
     var activeAudioSource: AudioSource {

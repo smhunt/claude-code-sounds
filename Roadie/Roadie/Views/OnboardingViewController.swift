@@ -95,6 +95,16 @@ class OnboardingViewController: UIViewController {
         return b
     }()
 
+    private let backButton: UIButton = {
+        let b = UIButton(type: .system)
+        b.translatesAutoresizingMaskIntoConstraints = false
+        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .medium)
+        b.setTitleColor(UIColor(white: 0.6, alpha: 1), for: .normal)
+        b.setTitle("Back", for: .normal)
+        b.isHidden = true
+        return b
+    }()
+
     private let pageControl: UIPageControl = {
         let p = UIPageControl()
         p.translatesAutoresizingMaskIntoConstraints = false
@@ -204,6 +214,7 @@ class OnboardingViewController: UIViewController {
         view.addSubview(apiKeyField)
         view.addSubview(micConfigContainer)
         view.addSubview(voiceSelectContainer)
+        view.addSubview(backButton)
         view.addSubview(primaryButton)
         view.addSubview(pageControl)
 
@@ -297,6 +308,10 @@ class OnboardingViewController: UIViewController {
             voiceStackView.bottomAnchor.constraint(equalTo: voiceScrollView.bottomAnchor),
             voiceStackView.widthAnchor.constraint(equalTo: voiceScrollView.widthAnchor),
 
+            backButton.bottomAnchor.constraint(equalTo: primaryButton.topAnchor, constant: -12),
+            backButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            backButton.heightAnchor.constraint(equalToConstant: 44),
+
             primaryButton.bottomAnchor.constraint(equalTo: pageControl.topAnchor, constant: -32),
             primaryButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 32),
             primaryButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
@@ -307,6 +322,7 @@ class OnboardingViewController: UIViewController {
         ])
 
         primaryButton.addTarget(self, action: #selector(primaryTapped), for: .touchUpInside)
+        backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
         micTestButton.addTarget(self, action: #selector(micTestTapped), for: .touchUpInside)
 
         let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
@@ -374,6 +390,9 @@ class OnboardingViewController: UIViewController {
         micConfigContainer.isHidden = true
         voiceSelectContainer.isHidden = true
 
+        // Show back button on all pages except first
+        backButton.isHidden = (page == 0)
+
         // Stop mic test when leaving that page
         if pages[page] != "micconfig" {
             stopMicTest()
@@ -435,6 +454,11 @@ class OnboardingViewController: UIViewController {
     }
 
     // MARK: - Actions
+
+    @objc private func backTapped() {
+        guard currentPage > 0 else { return }
+        updateForPage(currentPage - 1)
+    }
 
     @objc private func primaryTapped() {
         switch pages[currentPage] {
