@@ -98,12 +98,9 @@ class OnboardingViewController: UIViewController {
     private let backButton: UIButton = {
         let b = UIButton(type: .system)
         b.translatesAutoresizingMaskIntoConstraints = false
-        b.titleLabel?.font = .systemFont(ofSize: 16, weight: .semibold)
-        b.setTitleColor(.white, for: .normal)
-        b.setTitle("< Back", for: .normal)
-        b.backgroundColor = UIColor(white: 0.2, alpha: 1)
-        b.layer.cornerRadius = 10
-        b.contentEdgeInsets = UIEdgeInsets(top: 8, left: 20, bottom: 8, right: 20)
+        let config = UIImage.SymbolConfiguration(pointSize: 20, weight: .medium)
+        b.setImage(UIImage(systemName: "chevron.left.circle", withConfiguration: config), for: .normal)
+        b.tintColor = UIColor(white: 0.5, alpha: 1)
         b.isHidden = true
         return b
     }()
@@ -311,8 +308,9 @@ class OnboardingViewController: UIViewController {
             voiceStackView.bottomAnchor.constraint(equalTo: voiceScrollView.bottomAnchor),
             voiceStackView.widthAnchor.constraint(equalTo: voiceScrollView.widthAnchor),
 
-            backButton.bottomAnchor.constraint(equalTo: primaryButton.topAnchor, constant: -12),
-            backButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            backButton.centerYAnchor.constraint(equalTo: pageControl.centerYAnchor),
+            backButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
+            backButton.widthAnchor.constraint(equalToConstant: 44),
             backButton.heightAnchor.constraint(equalToConstant: 44),
 
             primaryButton.bottomAnchor.constraint(equalTo: pageControl.topAnchor, constant: -32),
